@@ -1,53 +1,129 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Pico W Motor Control</title>
+    <title>Vengeance Motor Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        .motor { margin: 20px; }
-        .wifi-config { margin: 20px; }
-        button { padding: 10px 20px; margin: 5px; }
-        input[type="range"] { width: 200px; }
-        input[type="text"] { padding: 5px; margin: 5px; }
+        body {
+            font-family: 'Creepster', cursive;
+            background: linear-gradient(135deg, #1a1a1a 0%, #4b0000 100%);
+            color: #ff4d4d;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            font-size: 3em;
+            text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px #ff4d4d;
+        }
+        .wifi-config, .motor {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2b0000;
+            border: 2px solid #ff4d4d;
+            border-radius: 10px;
+        }
+        h2 {
+            font-size: 2em;
+            margin: 10px 0;
+            text-shadow: 0 0 5px #ff0000;
+        }
+        button {
+            background: #ff4d4d;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Creepster', cursive;
+            font-size: 1.2em;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #ff9999;
+            box-shadow: 0 0 10px #ff4d4d;
+        }
+        input[type="range"] {
+            width: 200px;
+            accent-color: #ff4d4d;
+        }
+        input[type="text"] {
+            padding: 8px;
+            margin: 5px;
+            border: 2px solid #ff4d4d;
+            border-radius: 5px;
+            background: #1a1a1a;
+            color: #ff4d4d;
+            font-family: Arial, sans-serif;
+        }
+        label {
+            font-size: 1.3em;
+            margin: 10px 0;
+            display: block;
+        }
+        .status {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #ff9999;
+            text-shadow: 0 0 5px #ff4d4d;
+        }
+        .skull {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
-    <h1>Pico W Motor Control</h1>
-    <div class="wifi-config">
-        <h2>Wi-Fi Configuration</h2>
-        <label>SSID: </label><input type="text" id="wifiSSID" placeholder="Enter Wi-Fi SSID"><br>
-        <label>Password: </label><input type="text" id="wifiPassword" placeholder="Enter Wi-Fi Password"><br>
-        <button onclick="saveWifiConfig()">Save Wi-Fi</button>
-    </div>
-    <div class="motor">
-        <h2>Motor 1</h2>
-        <button onclick="m1Direction(1)">Forward</button>
-        <button id="m1Power" onclick="m1TogglePower()">Power On</button>
-        <button onclick="m1Direction(-1)">Backward</button><br>
-        <label>Speed (0-100%): <span id="m1SpeedValue">0</span></label><br>
-        <input type="range" id="m1SpeedSlider" min="0" max="100" value="0" oninput="m1Speed(this.value)"><br>
-        <button onclick="m1Pattern('heartbeat')">Heartbeat</button>
-        <button onclick="m1Pattern('wave')">Wave</button>
-        <button onclick="m1Pattern('quick')">Quick</button>
-        <button onclick="m1Pattern('pulse')">Pulse</button>
-        <button onclick="m1Pattern('buzz')">Buzz</button>
-        <button onclick="m1Pattern('stutter')">Stutter</button>
-        <button onclick="m1Pattern('none')">Steady</button>
-    </div>
-    <div class="motor">
-        <h2>Motor 2</h2>
-        <button onclick="m2Direction(1)">Forward</button>
-        <button id="m2Power" onclick="m2TogglePower()">Power On</button>
-        <button onclick="m2Direction(-1)">Backward</button><br>
-        <label>Speed (0-100%): <span id="m2SpeedValue">0</span></label><br>
-        <input type="range" id="m2SpeedSlider" min="0" max="100" value="0" oninput="m2Speed(this.value)"><br>
-        <button onclick="m2Pattern('heartbeat')">Heartbeat</button>
-        <button onclick="m2Pattern('wave')">Wave</button>
-        <button onclick="m2Pattern('quick')">Quick</button>
-        <button onclick="m2Pattern('pulse')">Pulse</button>
-        <button onclick="m2Pattern('buzz')">Buzz</button>
-        <button onclick="m2Pattern('stutter')">Stutter</button>
-        <button onclick="m2Pattern('none')">Steady</button>
+    <div class="container">
+        <h1>Vengeance Motor Control</h1>
+        <div class="skull">💀</div>
+        <div class="wifi-config">
+            <h2>Wi-Fi of Retribution</h2>
+            <label>SSID: <input type="text" id="wifiSSID" placeholder="Enter Wi-Fi SSID"></label>
+            <label>Password: <input type="text" id="wifiPassword" placeholder="Enter Wi-Fi Password"></label>
+            <button onclick="saveWifiConfig()">Unleash Connection</button>
+        </div>
+        <div class="motor">
+            <h2>Motor 1 - Blade of Wrath</h2>
+            <button onclick="m1Direction(1)">Strike</button>
+            <button id="m1Power" onclick="m1TogglePower()">Awaken</button>
+            <button onclick="m1Direction(-1)">Retreat</button><br>
+            <label>Fury (0-100%): <span id="m1SpeedValue">0</span></label>
+            <input type="range" id="m1SpeedSlider" min="0" max="100" value="0" oninput="m1Speed(this.value)"><br>
+            <button onclick="m1Pattern('heartbeat')">Heart of Vengeance</button>
+            <button onclick="m1Pattern('wave')">Wave of Doom</button>
+            <button onclick="m1Pattern('quick')">Swift Retribution</button>
+            <button onclick="m1Pattern('pulse')">Pulse of Rage</button>
+            <button onclick="m1Pattern('buzz')">Buzz of Fury</button>
+            <button onclick="m1Pattern('stutter')">Stutter of Pain</button>
+            <button onclick="m1Pattern('none')">Steady Revenge</button>
+        </div>
+        <div class="motor">
+            <h2>Motor 2 - Hammer of Justice</h2>
+            <button onclick="m2Direction(1)">Strike</button>
+            <button id="m2Power" onclick="m2TogglePower()">Awaken</button>
+            <button onclick="m2Direction(-1)">Retreat</button><br>
+            <label>Fury (0-100%): <span id="m2SpeedValue">0</span></label>
+            <input type="range" id="m2SpeedSlider" min="0" max="100" value="0" oninput="m2Speed(this.value)"><br>
+            <button onclick="m2Pattern('heartbeat')">Heart of Vengeance</button>
+            <button onclick="m2Pattern('wave')">Wave of Doom</button>
+            <button onclick="m2Pattern('quick')">Swift Retribution</button>
+            <button onclick="m2Pattern('pulse')">Pulse of Rage</button>
+            <button onclick="m2Pattern('buzz')">Buzz of Fury</button>
+            <button onclick="m2Pattern('stutter')">Stutter of Pain</button>
+            <button onclick="m2Pattern('none')">Steady Revenge</button>
+        </div>
+        <div class="status" id="status">Status: Awaiting Your Command...</div>
     </div>
 
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
@@ -69,13 +145,21 @@
             console.log("Connected to MQTT broker");
             sendCommand(topicM1, 0, 0, "none");
             sendCommand(topicM2, 0, 0, "none");
+            updateStatus("Connected to the Shadows");
         });
-        client.on("error", (err) => console.error("MQTT error:", err));
-        client.on("close", () => console.log("Connection closed"));
+        client.on("error", (err) => {
+            console.error("MQTT error:", err);
+            updateStatus("Error in the Abyss: " + err);
+        });
+        client.on("close", () => {
+            console.log("Connection closed");
+            updateStatus("Connection Lost to the Void");
+        });
 
         function m1Direction(dir) {
             if (m1PowerOn) {
                 sendCommand(topicM1, dir, document.getElementById("m1SpeedSlider").value, "none");
+                updateStatus("Motor 1 Strikes!");
             }
         }
 
@@ -83,6 +167,7 @@
             document.getElementById("m1SpeedValue").innerText = value;
             if (m1PowerOn) {
                 sendCommand(topicM1, value > 0 ? 1 : 0, value, "none");
+                updateStatus("Motor 1 Fury Set to " + value + "%");
             }
         }
 
@@ -90,21 +175,28 @@
             if (m1PowerOn) {
                 sendCommand(topicM1, document.getElementById("m1SpeedSlider").value > 0 ? 1 : 0, 
                             document.getElementById("m1SpeedSlider").value, pattern);
+                updateStatus("Motor 1 Unleashes " + pattern);
             }
         }
 
         function m1TogglePower() {
             m1PowerOn = !m1PowerOn;
-            document.getElementById("m1Power").innerText = m1PowerOn ? "Power Off" : "Power On";
+            document.getElementById("m1Power").innerText = m1PowerOn ? "Silence" : "Awaken";
             client.publish(topicM1, `{"power": ${m1PowerOn ? 1 : 0}}`, { qos: 0 }, (err) => {
-                if (!err) console.log(`Sent to ${topicM1}: {"power": ${m1PowerOn ? 1 : 0}}`);
-                else console.error("Publish error:", err);
+                if (!err) {
+                    console.log(`Sent to ${topicM1}: {"power": ${m1PowerOn ? 1 : 0}}`);
+                    updateStatus(m1PowerOn ? "Motor 1 Awakens!" : "Motor 1 Silenced");
+                } else {
+                    console.error("Publish error:", err);
+                    updateStatus("Error Awakening Motor 1");
+                }
             });
         }
 
         function m2Direction(dir) {
             if (m2PowerOn) {
                 sendCommand(topicM2, dir, document.getElementById("m2SpeedSlider").value, "none");
+                updateStatus("Motor 2 Strikes!");
             }
         }
 
@@ -112,6 +204,7 @@
             document.getElementById("m2SpeedValue").innerText = value;
             if (m2PowerOn) {
                 sendCommand(topicM2, value > 0 ? 1 : 0, value, "none");
+                updateStatus("Motor 2 Fury Set to " + value + "%");
             }
         }
 
@@ -119,15 +212,21 @@
             if (m2PowerOn) {
                 sendCommand(topicM2, document.getElementById("m2SpeedSlider").value > 0 ? 1 : 0, 
                             document.getElementById("m2SpeedSlider").value, pattern);
+                updateStatus("Motor 2 Unleashes " + pattern);
             }
         }
 
         function m2TogglePower() {
             m2PowerOn = !m2PowerOn;
-            document.getElementById("m2Power").innerText = m2PowerOn ? "Power Off" : "Power On";
+            document.getElementById("m2Power").innerText = m2PowerOn ? "Silence" : "Awaken";
             client.publish(topicM2, `{"power": ${m2PowerOn ? 1 : 0}}`, { qos: 0 }, (err) => {
-                if (!err) console.log(`Sent to ${topicM2}: {"power": ${m2PowerOn ? 1 : 0}}`);
-                else console.error("Publish error:", err);
+                if (!err) {
+                    console.log(`Sent to ${topicM2}: {"power": ${m2PowerOn ? 1 : 0}}`);
+                    updateStatus(m2PowerOn ? "Motor 2 Awakens!" : "Motor 2 Silenced");
+                } else {
+                    console.error("Publish error:", err);
+                    updateStatus("Error Awakening Motor 2");
+                }
             });
         }
 
@@ -145,12 +244,22 @@
             if (ssid && password) {
                 const message = `{"ssid": "${ssid}", "password": "${password}"}`;
                 client.publish(topicWifi, message, { qos: 0 }, (err) => {
-                    if (!err) console.log(`Sent to ${topicWifi}:`, message);
-                    else console.error("Publish error:", err);
+                    if (!err) {
+                        console.log(`Sent to ${topicWifi}:`, message);
+                        updateStatus("Wi-Fi Unleashed: " + ssid);
+                    } else {
+                        console.error("Publish error:", err);
+                        updateStatus("Failed to Unleash Wi-Fi");
+                    }
                 });
             } else {
-                alert("Please enter both SSID and Password");
+                alert("Enter both SSID and Password, Mortal!");
+                updateStatus("Wi-Fi Config Incomplete");
             }
+        }
+
+        function updateStatus(message) {
+            document.getElementById("status").innerText = "Status: " + message;
         }
     </script>
 </body>
