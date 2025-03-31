@@ -114,8 +114,8 @@
         <div class="skull">💀</div>
         <div class="wifi-config">
             <h2 data-lang="wifi_title">Wi-Fi of Retribution</h2>
-            <label data-lang="ssid_label">SSID: <input type="text" id="wifiSSID" placeholder="Enter Wi-Fi SSID"></label>
-            <label data-lang="password_label">Password: <input type="text" id="wifiPassword" placeholder="Enter Wi-Fi Password"></label>
+            <label><span data-lang="ssid_label">SSID:</span> <input type="text" id="wifiSSID" placeholder="Enter Wi-Fi SSID"></label>
+            <label><span data-lang="password_label">Password:</span> <input type="text" id="wifiPassword" placeholder="Enter Wi-Fi Password"></label>
             <button onclick="saveWifiConfig()" data-lang="wifi_button">Unleash Connection</button>
         </div>
         <div class="motor">
@@ -123,7 +123,7 @@
             <button onclick="m1Direction(1)" data-lang="strike">Strike</button>
             <button id="m1Power" onclick="m1TogglePower()" data-lang="awaken">Awaken</button>
             <button onclick="m1Direction(-1)" data-lang="retreat">Retreat</button><br>
-            <label data-lang="fury_label">Fury (0-100%): <span id="m1SpeedValue">0</span></label>
+            <label><span data-lang="fury_label">Fury (0-100%):</span> <span id="m1SpeedValue">0</span></label>
             <input type="range" id="m1SpeedSlider" min="0" max="100" value="0" oninput="m1Speed(this.value)"><br>
             <button onclick="m1Pattern('heartbeat')" data-lang="heartbeat">Heart of Vengeance</button>
             <button onclick="m1Pattern('wave')" data-lang="wave">Wave of Doom</button>
@@ -133,9 +133,9 @@
             <button onclick="m1Pattern('stutter')" data-lang="stutter">Stutter of Pain</button>
             <button onclick="m1Pattern('none')" data-lang="steady">Steady Revenge</button>
             <div class="timer-controls">
-                <label data-lang="delay_label">Delay (s): <input type="number" id="m1Delay" min="0" value="0" step="1"></label>
-                <label data-lang="duration_label">Duration (s): <input type="number" id="m1Duration" min="1" value="10" step="1"></label>
-                <label data-lang="repeat_label">Repeat (times): <input type="number" id="m1Repeat" min="0" value="1" step="1"></label>
+                <label><span data-lang="delay_label">Delay (s):</span> <input type="number" id="m1Delay" min="0" value="0" step="1"></label>
+                <label><span data-lang="duration_label">Duration (s):</span> <input type="number" id="m1Duration" min="1" value="10" step="1"></label>
+                <label><span data-lang="repeat_label">Repeat (times):</span> <input type="number" id="m1Repeat" min="0" value="1" step="1"></label>
             </div>
         </div>
         <div class="motor">
@@ -143,7 +143,7 @@
             <button onclick="m2Direction(1)" data-lang="strike">Strike</button>
             <button id="m2Power" onclick="m2TogglePower()" data-lang="awaken">Awaken</button>
             <button onclick="m2Direction(-1)" data-lang="retreat">Retreat</button><br>
-            <label data-lang="fury_label">Fury (0-100%): <span id="m2SpeedValue">0</span></label>
+            <label><span data-lang="fury_label">Fury (0-100%):</span> <span id="m2SpeedValue">0</span></label>
             <input type="range" id="m2SpeedSlider" min="0" max="100" value="0" oninput="m2Speed(this.value)"><br>
             <button onclick="m2Pattern('heartbeat')" data-lang="heartbeat">Heart of Vengeance</button>
             <button onclick="m2Pattern('wave')" data-lang="wave">Wave of Doom</button>
@@ -153,9 +153,9 @@
             <button onclick="m2Pattern('stutter')" data-lang="stutter">Stutter of Pain</button>
             <button onclick="m2Pattern('none')" data-lang="steady">Steady Revenge</button>
             <div class="timer-controls">
-                <label data-lang="delay_label">Delay (s): <input type="number" id="m2Delay" min="0" value="0" step="1"></label>
-                <label data-lang="duration_label">Duration (s): <input type="number" id="m2Duration" min="1" value="10" step="1"></label>
-                <label data-lang="repeat_label">Repeat (times): <input type="number" id="m2Repeat" min="0" value="1" step="1"></label>
+                <label><span data-lang="delay_label">Delay (s):</span> <input type="number" id="m2Delay" min="0" value="0" step="1"></label>
+                <label><span data-lang="duration_label">Duration (s):</span> <input type="number" id="m2Duration" min="1" value="10" step="1"></label>
+                <label><span data-lang="repeat_label">Repeat (times):</span> <input type="number" id="m2Repeat" min="0" value="1" step="1"></label>
             </div>
         </div>
         <div class="status" id="status" data-lang="status_prefix">Status: Awaiting Your Command...</div>
@@ -175,6 +175,7 @@
                 "strike": "Strike",
                 "retreat": "Retreat",
                 "awaken": "Awaken",
+                "silence": "Silence",
                 "fury_label": "Fury (0-100%):",
                 "heartbeat": "Heart of Vengeance",
                 "wave": "Wave of Doom",
@@ -186,7 +187,10 @@
                 "delay_label": "Delay (s):",
                 "duration_label": "Duration (s):",
                 "repeat_label": "Repeat (times):",
-                "status_prefix": "Status: "
+                "status_prefix": "Status: ",
+                "alert": "Enter both SSID and Password, Mortal!",
+                "ssid_placeholder": "Enter Wi-Fi SSID",
+                "password_placeholder": "Enter Wi-Fi Password"
             },
             "zh-CN": {
                 "title": "复仇电机控制",
@@ -199,6 +203,7 @@
                 "strike": "打击",
                 "retreat": "后退",
                 "awaken": "唤醒",
+                "silence": "沉默",
                 "fury_label": "怒火 (0-100%):",
                 "heartbeat": "复仇之心",
                 "wave": "毁灭之波",
@@ -210,7 +215,10 @@
                 "delay_label": "延迟 (秒):",
                 "duration_label": "持续时间 (秒):",
                 "repeat_label": "重复 (次数):",
-                "status_prefix": "状态: "
+                "status_prefix": "状态: ",
+                "alert": "输入SSID和密码，凡人！",
+                "ssid_placeholder": "输入Wi-Fi SSID",
+                "password_placeholder": "输入Wi-Fi密码"
             },
             "zh-TW": {
                 "title": "復仇電機控制",
@@ -223,10 +231,11 @@
                 "strike": "打擊",
                 "retreat": "後退",
                 "awaken": "喚醒",
+                "silence": "沉默",
                 "fury_label": "怒火 (0-100%):",
                 "heartbeat": "復仇之心",
                 "wave": "毀滅之波",
-                "quick": "迅速報復",
+                "quick": "迅速報偽",
                 "pulse": "憤怒脈衝",
                 "buzz": "狂怒嗡鳴",
                 "stutter": "痛苦顫動",
@@ -234,7 +243,10 @@
                 "delay_label": "延遲 (秒):",
                 "duration_label": "持續時間 (秒):",
                 "repeat_label": "重複 (次數):",
-                "status_prefix": "狀態: "
+                "status_prefix": "狀態: ",
+                "alert": "輸入SSID和密碼，凡人！",
+                "ssid_placeholder": "輸入Wi-Fi SSID",
+                "password_placeholder": "輸入Wi-Fi密碼"
             }
         };
 
@@ -300,7 +312,8 @@
 
         function m1TogglePower() {
             m1PowerOn = !m1PowerOn;
-            document.getElementById("m1Power").innerText = m1PowerOn ? translations[document.getElementById("language").value].silence || "Silence" : translations[document.getElementById("language").value].awaken;
+            const lang = document.getElementById("language").value;
+            document.getElementById("m1Power").innerText = m1PowerOn ? translations[lang].silence : translations[lang].awaken;
             client.publish(topicM1, `{"power": ${m1PowerOn ? 1 : 0}}`, { qos: 0 }, (err) => {
                 if (!err) {
                     console.log(`Sent to ${topicM1}: {"power": ${m1PowerOn ? 1 : 0}}`);
@@ -346,7 +359,8 @@
 
         function m2TogglePower() {
             m2PowerOn = !m2PowerOn;
-            document.getElementById("m2Power").innerText = m2PowerOn ? translations[document.getElementById("language").value].silence || "Silence" : translations[document.getElementById("language").value].awaken;
+            const lang = document.getElementById("language").value;
+            document.getElementById("m2Power").innerText = m2PowerOn ? translations[lang].silence : translations[lang].awaken;
             client.publish(topicM2, `{"power": ${m2PowerOn ? 1 : 0}}`, { qos: 0 }, (err) => {
                 if (!err) {
                     console.log(`Sent to ${topicM2}: {"power": ${m2PowerOn ? 1 : 0}}`);
@@ -369,6 +383,7 @@
         function saveWifiConfig() {
             const ssid = document.getElementById("wifiSSID").value;
             const password = document.getElementById("wifiPassword").value;
+            const lang = document.getElementById("language").value;
             if (ssid && password) {
                 const message = `{"ssid": "${ssid}", "password": "${password}"}`;
                 client.publish(topicWifi, message, { qos: 0 }, (err) => {
@@ -381,7 +396,7 @@
                     }
                 });
             } else {
-                alert(translations[document.getElementById("language").value].alert || "Enter both SSID and Password, Mortal!");
+                alert(translations[lang].alert);
                 updateStatus("Wi-Fi Config Incomplete");
             }
         }
@@ -395,20 +410,21 @@
             const lang = document.getElementById("language").value;
             document.querySelectorAll("[data-lang]").forEach(element => {
                 const key = element.getAttribute("data-lang");
-                if (key === "awaken") {
-                    element.innerText = m1PowerOn && element.id === "m1Power" || m2PowerOn && element.id === "m2Power" ? translations[lang].silence || "Silence" : translations[lang][key];
+                if (element.tagName === "BUTTON" && (element.id === "m1Power" || element.id === "m2Power")) {
+                    element.innerText = (element.id === "m1Power" && m1PowerOn) || (element.id === "m2Power" && m2PowerOn) ? translations[lang].silence : translations[lang][key];
+                } else if (element.tagName === "SPAN") {
+                    element.innerText = translations[lang][key];
                 } else {
                     element.innerText = translations[lang][key];
                 }
             });
             document.querySelectorAll("input[placeholder]").forEach(input => {
                 const placeholderKey = input.id === "wifiSSID" ? "ssid_placeholder" : "password_placeholder";
-                input.placeholder = translations[lang][placeholderKey] || input.placeholder;
+                input.placeholder = translations[lang][placeholderKey];
             });
-            updateStatus("Language Changed to " + lang);
+            updateStatus("Language Changed to " + (lang === "en" ? "English" : lang === "zh-CN" ? "Simplified Chinese" : "Traditional Chinese"));
         }
 
-        // Initial language setup
         document.addEventListener("DOMContentLoaded", () => {
             changeLanguage();
         });
