@@ -5,12 +5,20 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
         .motor { margin: 20px; }
+        .wifi-config { margin: 20px; }
         button { padding: 10px 20px; margin: 5px; }
         input[type="range"] { width: 200px; }
+        input[type="text"] { padding: 5px; margin: 5px; }
     </style>
 </head>
 <body>
     <h1>Pico W Motor Control</h1>
+    <div class="wifi-config">
+        <h2>Wi-Fi Configuration</h2>
+        <label>SSID: </label><input type="text" id="wifiSSID" placeholder="Enter Wi-Fi SSID"><br>
+        <label>Password: </label><input type="text" id="wifiPassword" placeholder="Enter Wi-Fi Password"><br>
+        <button onclick="saveWifiConfig()">Save Wi-Fi</button>
+    </div>
     <div class="motor">
         <h2>Motor 1</h2>
         <button onclick="m1Direction(1)">Forward</button>
@@ -48,6 +56,7 @@
         const port = 8081;
         const topicM1 = "pico/motor1/control";
         const topicM2 = "pico/motor2/control";
+        const topicWifi = "pico/wifi/config";
         let m1PowerOn = false;
         let m2PowerOn = false;
 
@@ -128,6 +137,20 @@
                 if (!err) console.log(`Sent to ${topic}:`, message);
                 else console.error("Publish error:", err);
             });
+        }
+
+        function saveWifiConfig() {
+            const ssid = document.getElementById("wifiSSID").value;
+            const password = document.getElementById("wifiPassword").value;
+            if (ssid && password) {
+                const message = `{"ssid": "${ssid}", "password": "${password}"}`;
+                client.publish(topicWifi, message, { qos: 0 }, (err) => {
+                    if (!err) console.log(`Sent to ${topicWifi}:`, message);
+                    else console.error("Publish error:", err);
+                });
+            } else {
+                alert("Please enter both SSID and Password");
+            }
         }
     </script>
 </body>
