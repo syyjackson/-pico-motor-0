@@ -96,7 +96,10 @@
         function m1TogglePower() {
             m1PowerOn = !m1PowerOn;
             document.getElementById("m1Power").innerText = m1PowerOn ? "Power Off" : "Power On";
-            client.publish(topicM1, `{"power": ${m1PowerOn}}`, { qos: 0 });
+            client.publish(topicM1, `{"power": ${m1PowerOn ? 1 : 0}}`, { qos: 0 }, (err) => {
+                if (!err) console.log(`Sent to ${topicM1}: {"power": ${m1PowerOn ? 1 : 0}}`);
+                else console.error("Publish error:", err);
+            });
         }
 
         function m2Direction(dir) {
@@ -133,7 +136,10 @@
         function m2TogglePower() {
             m2PowerOn = !m2PowerOn;
             document.getElementById("m2Power").innerText = m2PowerOn ? "Power Off" : "Power On";
-            client.publish(topicM2, `{"power": ${m2PowerOn}}`, { qos: 0 });
+            client.publish(topicM2, `{"power": ${m2PowerOn ? 1 : 0}}`, { qos: 0 }, (err) => {
+                if (!err) console.log(`Sent to ${topicM2}: {"power": ${m2PowerOn ? 1 : 0}}`);
+                else console.error("Publish error:", err);
+            });
         }
 
         function sendCommand(topic, direction, speed, interval, pattern) {
