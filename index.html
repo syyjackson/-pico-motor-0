@@ -124,7 +124,7 @@
             <label><span data-lang="start_time">Start Time:</span> <input type="time" id="startTime"></label>
             <label><span data-lang="period">Period (hours):</span> <input type="number" id="period" min="1" value="1" step="1"></label>
             <button onclick="startTimer()" data-lang="start_timer">Start Chaos</button>
-            <button onclick="quickSetup()" data-lang="quick_setup">Quick Chaos</button>
+            <button onclick="randomAttack()" data-lang="random_attack">Random Attack</button>
         </div>
         <div class="wifi-config">
             <h2 data-lang="wifi_title">Wi-Fi of Retribution</h2>
@@ -175,7 +175,7 @@
                 "start_time": "Start Time:",
                 "period": "Period (hours):",
                 "start_timer": "Start Chaos",
-                "quick_setup": "Quick Chaos",
+                "random_attack": "Random Attack",
                 "wifi_title": "Wi-Fi of Retribution",
                 "ssid_label": "SSID:",
                 "password_label": "Password:",
@@ -205,7 +205,7 @@
                 "start_time": "开始时间:",
                 "period": "周期 (小时):",
                 "start_timer": "启动混乱",
-                "quick_setup": "快速混乱",
+                "random_attack": "随机攻击",
                 "wifi_title": "复仇Wi-Fi",
                 "ssid_label": "SSID:",
                 "password_label": "密码:",
@@ -235,7 +235,7 @@
                 "start_time": "開始時間:",
                 "period": "週期 (小時):",
                 "start_timer": "啟動混亂",
-                "quick_setup": "快速混亂",
+                "random_attack": "隨機攻擊",
                 "wifi_title": "復仇Wi-Fi",
                 "ssid_label": "SSID:",
                 "password_label": "密碼:",
@@ -266,6 +266,7 @@
         const topicM2 = "pico/motor2/control";
         const topicWifi = "pico/wifi/config";
         const topicTimer = "pico/system/timer";
+        const topicFeedback = "pico/system/feedback";
         let m1PowerOn = false;
         let m2PowerOn = false;
         let m1SelectedPattern = "none";
@@ -278,9 +279,19 @@
 
         client.on("connect", () => {
             console.log("Connected to MQTT broker");
+            client.subscribe(topicFeedback);
             sendCommand(topicM1, 0, 0, "none");
             sendCommand(topicM2, 0, 0, "none");
             updateStatus("Connected to the Shadows");
+        });
+        client.on("message", (topic, message) => {
+            if (topic === topicFeedback) {
+                const data = JSON.parse(message.toString());
+                if (data.status === "timer_set") {
+                    updateStatus(data.quick ? "Random Attack Set: Period " + data.period + "h" : 
+                                            "Chaos Timer Set: Period " + data.period + "h");
+                }
+            }
         });
         client.on("error", (err) => {
             console.error("MQTT error:", err);
@@ -409,7 +420,7 @@
                 client.publish(topicTimer, message, { qos: 0 }, (err) => {
                     if (!err) {
                         console.log(`Sent to ${topicTimer}:`, message);
-                        updateStatus(`Chaos Timer Set: Start at ${startTime}, Period ${period}h`);
+                        updateStatus(`Chaos Timer Sent: Start at ${startTime}, Period ${period}h`);
                     } else {
                         console.error("Publish error:", err);
                         updateStatus("Failed to Set Timer");
@@ -421,7 +432,7 @@
             }
         }
 
-        function quickSetup() {
+        function randomAttack() {
             const startTime = document.getElementById("startTime").value;
             const period = document.getElementById("period").value;
             const lang = document.getElementById("language").value;
@@ -434,15 +445,15 @@
                 client.publish(topicTimer, message, { qos: 0 }, (err) => {
                     if (!err) {
                         console.log(`Sent to ${topicTimer}:`, message);
-                        updateStatus(`Quick Chaos: Start at ${startTime}, Period ${period}h, Random Vibrations`);
+                        updateStatus(`Random Attack Sent: Start at ${startTime}, Period ${period}h`);
                     } else {
                         console.error("Publish error:", err);
-                        updateStatus("Failed to Set Quick Chaos");
+                        updateStatus("Failed to Set Random Attack");
                     }
                 });
             } else {
                 alert(translations[lang].alert_timer);
-                updateStatus("Quick Chaos Config Incomplete");
+                updateStatus("Random Attack Config Incomplete");
             }
         }
 
