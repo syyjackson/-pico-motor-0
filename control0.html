@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pico W Motor Control</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        .motor { margin: 20px; }
+        button { padding: 10px 20px; margin: 5px; }
+        input[type="range"] { width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>Pico W Motor Control</h1>
+    <div class="motor">
+        <h2>Motor 1</h2>
+        <button onclick="m1Direction(1)">Forward</button>
+        <button onclick="m1Direction(0)">Stop</button>
+        <button onclick="m1Direction(-1)">Backward</button><br>
+        <label>Speed (0-100%): <span id="m1SpeedValue">0</span></label><br>
+        <input type="range" id="m1SpeedSlider" min="0" max="100" value="0" oninput="m1Speed(this.value)">
+    </div>
+    <div class="motor">
+        <h2>Motor 2</h2>
+        <button onclick="m2Direction(1)">Forward</button>
+        <button onclick="m2Direction(0)">Stop</button>
+        <button onclick="m2Direction(-1)">Backward</button><br>
+        <label>Speed (0-100%): <span id="m2SpeedValue">0</span></label><br>
+        <input type="range" id="m2SpeedSlider" min="0" max="100" value="0" oninput="m2Speed(this.value)">
+    </div>
+
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script>
+        const broker = "test.mosquitto.org";
+        const port = 8081;
+        const topicM1 = "pico/motor1/control";
+        const topicM2 = "pico/motor2/control";
+
+        const client = mqtt.connect(`wss://${broker}:${port}`, { 
+            clientId: "web_client_" + Math.random().toString(16).substr(2, 8),
+            keepalive: 60
+        });
+
+        client.on("connect", () => {
+            console.log("Connected to MQTT broker");
+            // Initialize motors stopped
+            sendCommand(topicM1, 0, 0);
+            sendCommand(topicM2, 0, 0);
+        });
+        client.on("error", (err) => console.error("MQTT error:", err));
+        client.on("close", () => console.log("Connection closed"));
+
+        function m1Direction(dir) {
+            sendCommand(topicM1, dir, document.getElementById("m1SpeedSlider").value);
+        }
+
+        function m1Speed(value) {
+            document.getElementById("m1SpeedValue").innerText = value;
+            sendCommand(topicM1, getDirectionM1(), value);
+        }
+
+        function m2Direction(dir) {
+            sendCommand(topicM2, dir, document.getElementById("m2SpeedSlider").value);
+        }
+
+        function m2Speed(value) {
+            document.getElementById("m2SpeedValue").innerText = value;
+            sendCommand(topicM2, getDirectionM2(), value);
+        }
+
+        function getDirectionM1() {
+            // Placeholder; enhance if needed
+            return document.getElementById("m1SpeedSlider").value > 0 ? 1 : 0;
+        }
+
+        function getDirectionM2() {
+            return document.getElementById("m2SpeedSlider").value > 0 ? 1 : 0;
+        }
+
+        function sendCommand(topic, direction, speed) {
+            const message = `{"direction": ${direction}, "speed": ${speed}}`;
+            client.publish(topic, message, { qos: 0 }, (err) => {
+                if (!err) console.log(`Sent to ${topic}:`, message);
+                else console.error("Publish error:", err);
+            });
+        }
+    </script>
+</body>
+</html>
