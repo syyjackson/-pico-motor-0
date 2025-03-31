@@ -417,8 +417,17 @@
             const period = document.getElementById("period").value;
             const lang = document.getElementById("language").value;
             if (startTime && period) {
-                if (m1PowerOn) m1TogglePower();  // Turn off motors
+                // Send current slider values and patterns before starting timer
+                const m1SpeedValue = document.getElementById("m1SpeedSlider").value;
+                const m2SpeedValue = document.getElementById("m2SpeedSlider").value;
+                sendCommand(topicM1, m1SpeedValue > 0 ? 1 : 0, m1SpeedValue, m1SelectedPattern);
+                sendCommand(topicM2, m2SpeedValue > 0 ? 1 : 0, m2SpeedValue, m2SelectedPattern);
+                
+                // Turn off motors
+                if (m1PowerOn) m1TogglePower();
                 if (m2PowerOn) m2TogglePower();
+                
+                // Start the timer
                 const message = `{"start_time": "${startTime}", "period": ${period}}`;
                 client.publish(topicTimer, message, { qos: 0 }, (err) => {
                     if (!err) {
