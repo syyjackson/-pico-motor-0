@@ -54,6 +54,10 @@
             background: #ff9999;
             box-shadow: 0 0 10px #ff4d4d;
         }
+        button.pressed {
+            background: #ff9999;
+            box-shadow: inset 0 0 10px #ff4d4d;
+        }
         input[type="range"], input[type="number"], input[type="time"] {
             width: 150px;
             accent-color: #ff4d4d;
@@ -115,12 +119,12 @@
         <h1 data-lang="title">Vengeance Motor Control</h1>
         <div class="skull">💀</div>
         <div class="system-timer">
-            <h2 data-lang="timer_title">System Timer of Doom</h2>
+            <h2 data-lang="timer_title">Chaos Timer</h2>
             <label><span data-lang="current_time">Current Time:</span> <span id="currentTime">--:--</span></label>
-            <label><span data-lang="on_time">On Time:</span> <input type="time" id="onTime"></label>
-            <label><span data-lang="off_time">Off Time:</span> <input type="time" id="offTime"></label>
-            <label><span data-lang="delay_off">Delay Off (s):</span> <input type="number" id="delayOff" min="0" value="0" step="1"></label>
-            <button onclick="startTimer()" data-lang="start_timer">Start Timer</button>
+            <label><span data-lang="start_time">Start Time:</span> <input type="time" id="startTime"></label>
+            <label><span data-lang="period">Period (hours):</span> <input type="number" id="period" min="1" value="1" step="1"></label>
+            <button onclick="startTimer()" data-lang="start_timer">Start Chaos</button>
+            <button onclick="quickSetup()" data-lang="quick_setup">Quick Chaos</button>
         </div>
         <div class="wifi-config">
             <h2 data-lang="wifi_title">Wi-Fi of Retribution</h2>
@@ -135,13 +139,13 @@
             <button onclick="m1Direction(-1)" data-lang="retreat">Retreat</button><br>
             <label><span data-lang="fury_label">Fury (0-100%):</span> <span id="m1SpeedValue">0</span></label>
             <input type="range" id="m1SpeedSlider" min="0" max="100" value="0" oninput="m1Speed(this.value)"><br>
-            <button onclick="m1Pattern('heartbeat')" data-lang="heartbeat">Heart of Vengeance</button>
-            <button onclick="m1Pattern('wave')" data-lang="wave">Wave of Doom</button>
-            <button onclick="m1Pattern('quick')" data-lang="quick">Swift Retribution</button>
-            <button onclick="m1Pattern('pulse')" data-lang="pulse">Pulse of Rage</button>
-            <button onclick="m1Pattern('buzz')" data-lang="buzz">Buzz of Fury</button>
-            <button onclick="m1Pattern('stutter')" data-lang="stutter">Stutter of Pain</button>
-            <button onclick="m1Pattern('none')" data-lang="steady">Steady Revenge</button>
+            <button id="m1Heartbeat" onclick="m1Pattern('heartbeat')" data-lang="heartbeat">Heart of Vengeance</button>
+            <button id="m1Wave" onclick="m1Pattern('wave')" data-lang="wave">Wave of Doom</button>
+            <button id="m1Quick" onclick="m1Pattern('quick')" data-lang="quick">Swift Retribution</button>
+            <button id="m1Pulse" onclick="m1Pattern('pulse')" data-lang="pulse">Pulse of Rage</button>
+            <button id="m1Buzz" onclick="m1Pattern('buzz')" data-lang="buzz">Buzz of Fury</button>
+            <button id="m1Stutter" onclick="m1Pattern('stutter')" data-lang="stutter">Stutter of Pain</button>
+            <button id="m1None" onclick="m1Pattern('none')" data-lang="steady">Steady Revenge</button>
         </div>
         <div class="motor">
             <h2 data-lang="motor2_title">Motor 2 - Hammer of Justice</h2>
@@ -150,13 +154,13 @@
             <button onclick="m2Direction(-1)" data-lang="retreat">Retreat</button><br>
             <label><span data-lang="fury_label">Fury (0-100%):</span> <span id="m2SpeedValue">0</span></label>
             <input type="range" id="m2SpeedSlider" min="0" max="100" value="0" oninput="m2Speed(this.value)"><br>
-            <button onclick="m2Pattern('heartbeat')" data-lang="heartbeat">Heart of Vengeance</button>
-            <button onclick="m2Pattern('wave')" data-lang="wave">Wave of Doom</button>
-            <button onclick="m2Pattern('quick')" data-lang="quick">Swift Retribution</button>
-            <button onclick="m2Pattern('pulse')" data-lang="pulse">Pulse of Rage</button>
-            <button onclick="m2Pattern('buzz')" data-lang="buzz">Buzz of Fury</button>
-            <button onclick="m2Pattern('stutter')" data-lang="stutter">Stutter of Pain</button>
-            <button onclick="m2Pattern('none')" data-lang="steady">Steady Revenge</button>
+            <button id="m2Heartbeat" onclick="m2Pattern('heartbeat')" data-lang="heartbeat">Heart of Vengeance</button>
+            <button id="m2Wave" onclick="m2Pattern('wave')" data-lang="wave">Wave of Doom</button>
+            <button id="m2Quick" onclick="m2Pattern('quick')" data-lang="quick">Swift Retribution</button>
+            <button id="m2Pulse" onclick="m2Pattern('pulse')" data-lang="pulse">Pulse of Rage</button>
+            <button id="m2Buzz" onclick="m2Pattern('buzz')" data-lang="buzz">Buzz of Fury</button>
+            <button id="m2Stutter" onclick="m2Pattern('stutter')" data-lang="stutter">Stutter of Pain</button>
+            <button id="m2None" onclick="m2Pattern('none')" data-lang="steady">Steady Revenge</button>
         </div>
         <div class="status" id="status" data-lang="status_prefix">Status: Awaiting Your Command...</div>
     </div>
@@ -166,12 +170,12 @@
         const translations = {
             "en": {
                 "title": "Vengeance Motor Control",
-                "timer_title": "System Timer of Doom",
+                "timer_title": "Chaos Timer",
                 "current_time": "Current Time:",
-                "on_time": "On Time:",
-                "off_time": "Off Time:",
-                "delay_off": "Delay Off (s):",
-                "start_timer": "Start Timer",
+                "start_time": "Start Time:",
+                "period": "Period (hours):",
+                "start_timer": "Start Chaos",
+                "quick_setup": "Quick Chaos",
                 "wifi_title": "Wi-Fi of Retribution",
                 "ssid_label": "SSID:",
                 "password_label": "Password:",
@@ -192,18 +196,16 @@
                 "steady": "Steady Revenge",
                 "status_prefix": "Status: ",
                 "alert": "Enter both SSID and Password, Mortal!",
-                "alert_timer": "Set both On and Off times, Mortal!",
-                "ssid_placeholder": "Enter Wi-Fi SSID",
-                "password_placeholder": "Enter Wi-Fi Password"
+                "alert_timer": "Set Start Time and Period, Mortal!"
             },
             "zh-CN": {
                 "title": "复仇电机控制",
-                "timer_title": "毁灭系统计时器",
+                "timer_title": "混乱计时器",
                 "current_time": "当前时间:",
-                "on_time": "开启时间:",
-                "off_time": "关闭时间:",
-                "delay_off": "延迟关闭 (秒):",
-                "start_timer": "启动计时器",
+                "start_time": "开始时间:",
+                "period": "周期 (小时):",
+                "start_timer": "启动混乱",
+                "quick_setup": "快速混乱",
                 "wifi_title": "复仇Wi-Fi",
                 "ssid_label": "SSID:",
                 "password_label": "密码:",
@@ -224,18 +226,16 @@
                 "steady": "稳定复仇",
                 "status_prefix": "状态: ",
                 "alert": "输入SSID和密码，凡人！",
-                "alert_timer": "设置开启和关闭时间，凡人！",
-                "ssid_placeholder": "输入Wi-Fi SSID",
-                "password_placeholder": "输入Wi-Fi密码"
+                "alert_timer": "设置开始时间和周期，凡人！"
             },
             "zh-TW": {
                 "title": "復仇電機控制",
-                "timer_title": "毀滅系統計時器",
+                "timer_title": "混亂計時器",
                 "current_time": "當前時間:",
-                "on_time": "開啟時間:",
-                "off_time": "關閉時間:",
-                "delay_off": "延遲關閉 (秒):",
-                "start_timer": "啟動計時器",
+                "start_time": "開始時間:",
+                "period": "週期 (小時):",
+                "start_timer": "啟動混亂",
+                "quick_setup": "快速混亂",
                 "wifi_title": "復仇Wi-Fi",
                 "ssid_label": "SSID:",
                 "password_label": "密碼:",
@@ -256,9 +256,7 @@
                 "steady": "穩定復仇",
                 "status_prefix": "狀態: ",
                 "alert": "輸入SSID和密碼，凡人！",
-                "alert_timer": "設置開啟和關閉時間，凡人！",
-                "ssid_placeholder": "輸入Wi-Fi SSID",
-                "password_placeholder": "輸入Wi-Fi密碼"
+                "alert_timer": "設置開始時間和週期，凡人！"
             }
         };
 
@@ -270,6 +268,8 @@
         const topicTimer = "pico/system/timer";
         let m1PowerOn = false;
         let m2PowerOn = false;
+        let m1SelectedPattern = "none";
+        let m2SelectedPattern = "none";
 
         const client = mqtt.connect(`wss://${broker}:${port}`, { 
             clientId: "web_client_" + Math.random().toString(16).substr(2, 8),
@@ -293,7 +293,7 @@
 
         function m1Direction(dir) {
             if (m1PowerOn) {
-                sendCommand(topicM1, dir, document.getElementById("m1SpeedSlider").value, "none");
+                sendCommand(topicM1, dir, document.getElementById("m1SpeedSlider").value, m1SelectedPattern);
                 updateStatus("Motor 1 Strikes!");
             }
         }
@@ -301,16 +301,18 @@
         function m1Speed(value) {
             document.getElementById("m1SpeedValue").innerText = value;
             if (m1PowerOn) {
-                sendCommand(topicM1, value > 0 ? 1 : 0, value, "none");
+                sendCommand(topicM1, value > 0 ? 1 : 0, value, m1SelectedPattern);
                 updateStatus("Motor 1 Fury Set to " + value + "%");
             }
         }
 
         function m1Pattern(pattern) {
             if (m1PowerOn) {
+                m1SelectedPattern = pattern;
                 sendCommand(topicM1, document.getElementById("m1SpeedSlider").value > 0 ? 1 : 0, 
                             document.getElementById("m1SpeedSlider").value, pattern);
                 updateStatus("Motor 1 Unleashes " + pattern);
+                updatePatternButtons(1, pattern);
             }
         }
 
@@ -331,7 +333,7 @@
 
         function m2Direction(dir) {
             if (m2PowerOn) {
-                sendCommand(topicM2, dir, document.getElementById("m2SpeedSlider").value, "none");
+                sendCommand(topicM2, dir, document.getElementById("m2SpeedSlider").value, m2SelectedPattern);
                 updateStatus("Motor 2 Strikes!");
             }
         }
@@ -339,16 +341,18 @@
         function m2Speed(value) {
             document.getElementById("m2SpeedValue").innerText = value;
             if (m2PowerOn) {
-                sendCommand(topicM2, value > 0 ? 1 : 0, value, "none");
+                sendCommand(topicM2, value > 0 ? 1 : 0, value, m2SelectedPattern);
                 updateStatus("Motor 2 Fury Set to " + value + "%");
             }
         }
 
         function m2Pattern(pattern) {
             if (m2PowerOn) {
+                m2SelectedPattern = pattern;
                 sendCommand(topicM2, document.getElementById("m2SpeedSlider").value > 0 ? 1 : 0, 
                             document.getElementById("m2SpeedSlider").value, pattern);
                 updateStatus("Motor 2 Unleashes " + pattern);
+                updatePatternButtons(2, pattern);
             }
         }
 
@@ -397,25 +401,58 @@
         }
 
         function startTimer() {
-            const onTime = document.getElementById("onTime").value;
-            const offTime = document.getElementById("offTime").value;
-            const delayOff = document.getElementById("delayOff").value;
-            if (onTime && offTime) {
-                const message = `{"on_time": "${onTime}", "off_time": "${offTime}", "delay_off": ${delayOff}}`;
+            const startTime = document.getElementById("startTime").value;
+            const period = document.getElementById("period").value;
+            const lang = document.getElementById("language").value;
+            if (startTime && period) {
+                const message = `{"start_time": "${startTime}", "period": ${period}, "quick": 0}`;
                 client.publish(topicTimer, message, { qos: 0 }, (err) => {
                     if (!err) {
                         console.log(`Sent to ${topicTimer}:`, message);
-                        updateStatus(`Timer Set: On at ${onTime}, Off at ${offTime}, Delay ${delayOff}s`);
+                        updateStatus(`Chaos Timer Set: Start at ${startTime}, Period ${period}h`);
                     } else {
                         console.error("Publish error:", err);
                         updateStatus("Failed to Set Timer");
                     }
                 });
             } else {
-                const lang = document.getElementById("language").value;
                 alert(translations[lang].alert_timer);
                 updateStatus("Timer Config Incomplete");
             }
+        }
+
+        function quickSetup() {
+            const startTime = document.getElementById("startTime").value;
+            const period = document.getElementById("period").value;
+            const lang = document.getElementById("language").value;
+            if (startTime && period) {
+                const m1Speed = document.getElementById("m1SpeedSlider").value;
+                const m2Speed = document.getElementById("m2SpeedSlider").value;
+                if (m1Speed > 0 && !m1PowerOn) m1TogglePower();
+                if (m2Speed > 0 && !m2PowerOn) m2TogglePower();
+                const message = `{"start_time": "${startTime}", "period": ${period}, "quick": 1}`;
+                client.publish(topicTimer, message, { qos: 0 }, (err) => {
+                    if (!err) {
+                        console.log(`Sent to ${topicTimer}:`, message);
+                        updateStatus(`Quick Chaos: Start at ${startTime}, Period ${period}h, Random Vibrations`);
+                    } else {
+                        console.error("Publish error:", err);
+                        updateStatus("Failed to Set Quick Chaos");
+                    }
+                });
+            } else {
+                alert(translations[lang].alert_timer);
+                updateStatus("Quick Chaos Config Incomplete");
+            }
+        }
+
+        function updatePatternButtons(motor, pattern) {
+            const prefix = motor === 1 ? "m1" : "m2";
+            const patterns = ["heartbeat", "wave", "quick", "pulse", "buzz", "stutter", "none"];
+            patterns.forEach(p => {
+                const btn = document.getElementById(`${prefix}${p.charAt(0).toUpperCase() + p.slice(1)}`);
+                btn.classList.toggle("pressed", p === pattern);
+            });
         }
 
         function updateStatus(message) {
@@ -435,10 +472,6 @@
                     element.innerText = translations[lang][key];
                 }
             });
-            document.querySelectorAll("input[placeholder]").forEach(input => {
-                const placeholderKey = input.id === "wifiSSID" ? "ssid_placeholder" : "password_placeholder";
-                input.placeholder = translations[lang][placeholderKey];
-            });
             updateStatus("Language Changed to " + (lang === "en" ? "English" : lang === "zh-CN" ? "Simplified Chinese" : "Traditional Chinese"));
         }
 
@@ -451,7 +484,9 @@
         document.addEventListener("DOMContentLoaded", () => {
             changeLanguage();
             updateClock();
-            setInterval(updateClock, 1000); // Update clock every second
+            setInterval(updateClock, 1000);
+            updatePatternButtons(1, "none");
+            updatePatternButtons(2, "none");
         });
     </script>
 </body>
