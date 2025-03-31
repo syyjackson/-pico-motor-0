@@ -18,8 +18,10 @@
         <button onclick="m1Direction(-1)">Backward</button><br>
         <label>Speed (0-100%): <span id="m1SpeedValue">0</span></label><br>
         <input type="range" id="m1SpeedSlider" min="0" max="100" value="0" oninput="m1Speed(this.value)"><br>
-        <label>Interval (50-1000ms): <span id="m1IntervalValue">500</span></label><br>
-        <input type="range" id="m1IntervalSlider" min="50" max="1000" value="500" oninput="m1Interval(this.value)"><br>
+        <label>On Time (50-2000ms): <span id="m1OnTimeValue">1000</span></label><br>
+        <input type="range" id="m1OnTimeSlider" min="50" max="2000" value="1000" oninput="m1OnTime(this.value)"><br>
+        <label>Off Time (50-2000ms): <span id="m1OffTimeValue">1000</span></label><br>
+        <input type="range" id="m1OffTimeSlider" min="50" max="2000" value="1000" oninput="m1OffTime(this.value)"><br>
         <button onclick="m1Pattern('heartbeat')">Heartbeat</button>
         <button onclick="m1Pattern('wave')">Wave</button>
         <button onclick="m1Pattern('quick')">Quick</button>
@@ -32,8 +34,10 @@
         <button onclick="m2Direction(-1)">Backward</button><br>
         <label>Speed (0-100%): <span id="m2SpeedValue">0</span></label><br>
         <input type="range" id="m2SpeedSlider" min="0" max="100" value="0" oninput="m2Speed(this.value)"><br>
-        <label>Interval (50-1000ms): <span id="m2IntervalValue">500</span></label><br>
-        <input type="range" id="m2IntervalSlider" min="50" max="1000" value="500" oninput="m2Interval(this.value)"><br>
+        <label>On Time (50-2000ms): <span id="m2OnTimeValue">1000</span></label><br>
+        <input type="range" id="m2OnTimeSlider" min="50" max="2000" value="1000" oninput="m2OnTime(this.value)"><br>
+        <label>Off Time (50-2000ms): <span id="m2OffTimeValue">1000</span></label><br>
+        <input type="range" id="m2OffTimeSlider" min="50" max="2000" value="1000" oninput="m2OffTime(this.value)"><br>
         <button onclick="m2Pattern('heartbeat')">Heartbeat</button>
         <button onclick="m2Pattern('wave')">Wave</button>
         <button onclick="m2Pattern('quick')">Quick</button>
@@ -56,8 +60,8 @@
 
         client.on("connect", () => {
             console.log("Connected to MQTT broker");
-            sendCommand(topicM1, 0, 0, 500, "none");
-            sendCommand(topicM2, 0, 0, 500, "none");
+            sendCommand(topicM1, 0, 0, 1000, 1000, "none");
+            sendCommand(topicM2, 0, 0, 1000, 1000, "none");
         });
         client.on("error", (err) => console.error("MQTT error:", err));
         client.on("close", () => console.log("Connection closed"));
@@ -65,7 +69,8 @@
         function m1Direction(dir) {
             if (m1PowerOn) {
                 sendCommand(topicM1, dir, document.getElementById("m1SpeedSlider").value, 
-                            document.getElementById("m1IntervalSlider").value, "none");
+                            document.getElementById("m1OnTimeSlider").value, 
+                            document.getElementById("m1OffTimeSlider").value, "none");
             }
         }
 
@@ -73,15 +78,26 @@
             document.getElementById("m1SpeedValue").innerText = value;
             if (m1PowerOn) {
                 sendCommand(topicM1, value > 0 ? 1 : 0, value, 
-                            document.getElementById("m1IntervalSlider").value, "none");
+                            document.getElementById("m1OnTimeSlider").value, 
+                            document.getElementById("m1OffTimeSlider").value, "none");
             }
         }
 
-        function m1Interval(value) {
-            document.getElementById("m1IntervalValue").innerText = value;
+        function m1OnTime(value) {
+            document.getElementById("m1OnTimeValue").innerText = value;
             if (m1PowerOn) {
                 sendCommand(topicM1, document.getElementById("m1SpeedSlider").value > 0 ? 1 : 0, 
-                            document.getElementById("m1SpeedSlider").value, value, "none");
+                            document.getElementById("m1SpeedSlider").value, value, 
+                            document.getElementById("m1OffTimeSlider").value, "none");
+            }
+        }
+
+        function m1OffTime(value) {
+            document.getElementById("m1OffTimeValue").innerText = value;
+            if (m1PowerOn) {
+                sendCommand(topicM1, document.getElementById("m1SpeedSlider").value > 0 ? 1 : 0, 
+                            document.getElementById("m1SpeedSlider").value, 
+                            document.getElementById("m1OnTimeSlider").value, value, "none");
             }
         }
 
@@ -89,7 +105,8 @@
             if (m1PowerOn) {
                 sendCommand(topicM1, document.getElementById("m1SpeedSlider").value > 0 ? 1 : 0, 
                             document.getElementById("m1SpeedSlider").value, 
-                            document.getElementById("m1IntervalSlider").value, pattern);
+                            document.getElementById("m1OnTimeSlider").value, 
+                            document.getElementById("m1OffTimeSlider").value, pattern);
             }
         }
 
@@ -105,7 +122,8 @@
         function m2Direction(dir) {
             if (m2PowerOn) {
                 sendCommand(topicM2, dir, document.getElementById("m2SpeedSlider").value, 
-                            document.getElementById("m2IntervalSlider").value, "none");
+                            document.getElementById("m2OnTimeSlider").value, 
+                            document.getElementById("m2OffTimeSlider").value, "none");
             }
         }
 
@@ -113,15 +131,26 @@
             document.getElementById("m2SpeedValue").innerText = value;
             if (m2PowerOn) {
                 sendCommand(topicM2, value > 0 ? 1 : 0, value, 
-                            document.getElementById("m2IntervalSlider").value, "none");
+                            document.getElementById("m2OnTimeSlider").value, 
+                            document.getElementById("m2OffTimeSlider").value, "none");
             }
         }
 
-        function m2Interval(value) {
-            document.getElementById("m2IntervalValue").innerText = value;
+        function m2OnTime(value) {
+            document.getElementById("m2OnTimeValue").innerText = value;
             if (m2PowerOn) {
                 sendCommand(topicM2, document.getElementById("m2SpeedSlider").value > 0 ? 1 : 0, 
-                            document.getElementById("m2SpeedSlider").value, value, "none");
+                            document.getElementById("m2SpeedSlider").value, value, 
+                            document.getElementById("m2OffTimeSlider").value, "none");
+            }
+        }
+
+        function m2OffTime(value) {
+            document.getElementById("m2OffTimeValue").innerText = value;
+            if (m2PowerOn) {
+                sendCommand(topicM2, document.getElementById("m2SpeedSlider").value > 0 ? 1 : 0, 
+                            document.getElementById("m2SpeedSlider").value, 
+                            document.getElementById("m2OnTimeSlider").value, value, "none");
             }
         }
 
@@ -129,7 +158,8 @@
             if (m2PowerOn) {
                 sendCommand(topicM2, document.getElementById("m2SpeedSlider").value > 0 ? 1 : 0, 
                             document.getElementById("m2SpeedSlider").value, 
-                            document.getElementById("m2IntervalSlider").value, pattern);
+                            document.getElementById("m2OnTimeSlider").value, 
+                            document.getElementById("m2OffTimeSlider").value, pattern);
             }
         }
 
@@ -142,8 +172,8 @@
             });
         }
 
-        function sendCommand(topic, direction, speed, interval, pattern) {
-            const message = `{"direction": ${direction}, "speed": ${speed}, "interval": ${interval}, "pattern": "${pattern}"}`;
+        function sendCommand(topic, direction, speed, on_time, off_time, pattern) {
+            const message = `{"direction": ${direction}, "speed": ${speed}, "on_time": ${on_time}, "off_time": ${off_time}, "pattern": "${pattern}"}`;
             client.publish(topic, message, { qos: 0 }, (err) => {
                 if (!err) console.log(`Sent to ${topic}:`, message);
                 else console.error("Publish error:", err);
