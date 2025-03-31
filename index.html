@@ -14,7 +14,7 @@
     <div class="motor">
         <h2>Motor 1</h2>
         <button onclick="m1Direction(1)">Forward</button>
-        <button id="m1Stop" onclick="m1ToggleStop()">Stop/Lock</button>
+        <button id="m1Power" onclick="m1TogglePower()">Power On</button>
         <button onclick="m1Direction(-1)">Backward</button><br>
         <label>Speed (0-100%): <span id="m1SpeedValue">0</span></label><br>
         <input type="range" id="m1SpeedSlider" min="0" max="100" value="0" oninput="m1Speed(this.value)"><br>
@@ -28,7 +28,7 @@
     <div class="motor">
         <h2>Motor 2</h2>
         <button onclick="m2Direction(1)">Forward</button>
-        <button id="m2Stop" onclick="m2ToggleStop()">Stop/Lock</button>
+        <button id="m2Power" onclick="m2TogglePower()">Power On</button>
         <button onclick="m2Direction(-1)">Backward</button><br>
         <label>Speed (0-100%): <span id="m2SpeedValue">0</span></label><br>
         <input type="range" id="m2SpeedSlider" min="0" max="100" value="0" oninput="m2Speed(this.value)"><br>
@@ -46,8 +46,8 @@
         const port = 8081;
         const topicM1 = "pico/motor1/control";
         const topicM2 = "pico/motor2/control";
-        let m1Locked = false;
-        let m2Locked = false;
+        let m1PowerOn = false;
+        let m2PowerOn = false;
 
         const client = mqtt.connect(`wss://${broker}:${port}`, { 
             clientId: "web_client_" + Math.random().toString(16).substr(2, 8),
@@ -63,7 +63,7 @@
         client.on("close", () => console.log("Connection closed"));
 
         function m1Direction(dir) {
-            if (!m1Locked) {
+            if (m1PowerOn) {
                 sendCommand(topicM1, dir, document.getElementById("m1SpeedSlider").value, 
                             document.getElementById("m1IntervalSlider").value, "none");
             }
@@ -71,7 +71,7 @@
 
         function m1Speed(value) {
             document.getElementById("m1SpeedValue").innerText = value;
-            if (!m1Locked) {
+            if (m1PowerOn) {
                 sendCommand(topicM1, value > 0 ? 1 : 0, value, 
                             document.getElementById("m1IntervalSlider").value, "none");
             }
@@ -79,28 +79,28 @@
 
         function m1Interval(value) {
             document.getElementById("m1IntervalValue").innerText = value;
-            if (!m1Locked) {
+            if (m1PowerOn) {
                 sendCommand(topicM1, document.getElementById("m1SpeedSlider").value > 0 ? 1 : 0, 
                             document.getElementById("m1SpeedSlider").value, value, "none");
             }
         }
 
         function m1Pattern(pattern) {
-            if (!m1Locked) {
+            if (m1PowerOn) {
                 sendCommand(topicM1, document.getElementById("m1SpeedSlider").value > 0 ? 1 : 0, 
                             document.getElementById("m1SpeedSlider").value, 
                             document.getElementById("m1IntervalSlider").value, pattern);
             }
         }
 
-        function m1ToggleStop() {
-            m1Locked = !m1Locked;
-            document.getElementById("m1Stop").innerText = m1Locked ? "Unlock" : "Stop/Lock";
-            client.publish(topicM1, `{"lock": ${m1Locked}}`, { qos: 0 });
+        function m1TogglePower() {
+            m1PowerOn = !m1PowerOn;
+            document.getElementById("m1Power").innerText = m1PowerOn ? "Power Off" : "Power On";
+            client.publish(topicM1, `{"power": ${m1PowerOn}}`, { qos: 0 });
         }
 
         function m2Direction(dir) {
-            if (!m2Locked) {
+            if (m2PowerOn) {
                 sendCommand(topicM2, dir, document.getElementById("m2SpeedSlider").value, 
                             document.getElementById("m2IntervalSlider").value, "none");
             }
@@ -108,7 +108,7 @@
 
         function m2Speed(value) {
             document.getElementById("m2SpeedValue").innerText = value;
-            if (!m2Locked) {
+            if (m2PowerOn) {
                 sendCommand(topicM2, value > 0 ? 1 : 0, value, 
                             document.getElementById("m2IntervalSlider").value, "none");
             }
@@ -116,24 +116,24 @@
 
         function m2Interval(value) {
             document.getElementById("m2IntervalValue").innerText = value;
-            if (!m2Locked) {
+            if (m2PowerOn) {
                 sendCommand(topicM2, document.getElementById("m2SpeedSlider").value > 0 ? 1 : 0, 
                             document.getElementById("m2SpeedSlider").value, value, "none");
             }
         }
 
         function m2Pattern(pattern) {
-            if (!m2Locked) {
+            if (m2PowerOn) {
                 sendCommand(topicM2, document.getElementById("m2SpeedSlider").value > 0 ? 1 : 0, 
                             document.getElementById("m2SpeedSlider").value, 
                             document.getElementById("m2IntervalSlider").value, pattern);
             }
         }
 
-        function m2ToggleStop() {
-            m2Locked = !m2Locked;
-            document.getElementById("m2Stop").innerText = m2Locked ? "Unlock" : "Stop/Lock";
-            client.publish(topicM2, `{"lock": ${m2Locked}}`, { qos: 0 });
+        function m2TogglePower() {
+            m2PowerOn = !m2PowerOn;
+            document.getElementById("m2Power").innerText = m2PowerOn ? "Power Off" : "Power On";
+            client.publish(topicM2, `{"power": ${m2PowerOn}}`, { qos: 0 });
         }
 
         function sendCommand(topic, direction, speed, interval, pattern) {
