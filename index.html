@@ -26,7 +26,7 @@
             box-shadow: 0 0 15px #ff4d4d;
             position: relative;
         }
-        .wifi-config, .motor {
+        .system-timer, .wifi-config, .motor {
             margin: 20px 0;
             padding: 15px;
             background: #2b0000;
@@ -54,10 +54,15 @@
             background: #ff9999;
             box-shadow: 0 0 10px #ff4d4d;
         }
-        input[type="range"], input[type="number"] {
+        input[type="range"], input[type="number"], input[type="time"] {
             width: 150px;
             accent-color: #ff4d4d;
             margin: 5px;
+            background: #1a1a1a;
+            color: #ff4d4d;
+            border: 2px solid #ff4d4d;
+            border-radius: 5px;
+            padding: 5px;
         }
         input[type="text"] {
             padding: 8px;
@@ -96,9 +101,6 @@
             border-radius: 5px;
             font-family: Arial, sans-serif;
         }
-        .timer-controls {
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
@@ -112,6 +114,14 @@
         </div>
         <h1 data-lang="title">Vengeance Motor Control</h1>
         <div class="skull">💀</div>
+        <div class="system-timer">
+            <h2 data-lang="timer_title">System Timer of Doom</h2>
+            <label><span data-lang="current_time">Current Time:</span> <span id="currentTime">--:--</span></label>
+            <label><span data-lang="on_time">On Time:</span> <input type="time" id="onTime"></label>
+            <label><span data-lang="off_time">Off Time:</span> <input type="time" id="offTime"></label>
+            <label><span data-lang="delay_off">Delay Off (s):</span> <input type="number" id="delayOff" min="0" value="0" step="1"></label>
+            <button onclick="startTimer()" data-lang="start_timer">Start Timer</button>
+        </div>
         <div class="wifi-config">
             <h2 data-lang="wifi_title">Wi-Fi of Retribution</h2>
             <label><span data-lang="ssid_label">SSID:</span> <input type="text" id="wifiSSID" placeholder="Enter Wi-Fi SSID"></label>
@@ -132,11 +142,6 @@
             <button onclick="m1Pattern('buzz')" data-lang="buzz">Buzz of Fury</button>
             <button onclick="m1Pattern('stutter')" data-lang="stutter">Stutter of Pain</button>
             <button onclick="m1Pattern('none')" data-lang="steady">Steady Revenge</button>
-            <div class="timer-controls">
-                <label><span data-lang="delay_label">Delay (s):</span> <input type="number" id="m1Delay" min="0" value="0" step="1"></label>
-                <label><span data-lang="duration_label">Duration (s):</span> <input type="number" id="m1Duration" min="1" value="10" step="1"></label>
-                <label><span data-lang="repeat_label">Repeat (times):</span> <input type="number" id="m1Repeat" min="0" value="1" step="1"></label>
-            </div>
         </div>
         <div class="motor">
             <h2 data-lang="motor2_title">Motor 2 - Hammer of Justice</h2>
@@ -152,11 +157,6 @@
             <button onclick="m2Pattern('buzz')" data-lang="buzz">Buzz of Fury</button>
             <button onclick="m2Pattern('stutter')" data-lang="stutter">Stutter of Pain</button>
             <button onclick="m2Pattern('none')" data-lang="steady">Steady Revenge</button>
-            <div class="timer-controls">
-                <label><span data-lang="delay_label">Delay (s):</span> <input type="number" id="m2Delay" min="0" value="0" step="1"></label>
-                <label><span data-lang="duration_label">Duration (s):</span> <input type="number" id="m2Duration" min="1" value="10" step="1"></label>
-                <label><span data-lang="repeat_label">Repeat (times):</span> <input type="number" id="m2Repeat" min="0" value="1" step="1"></label>
-            </div>
         </div>
         <div class="status" id="status" data-lang="status_prefix">Status: Awaiting Your Command...</div>
     </div>
@@ -166,6 +166,12 @@
         const translations = {
             "en": {
                 "title": "Vengeance Motor Control",
+                "timer_title": "System Timer of Doom",
+                "current_time": "Current Time:",
+                "on_time": "On Time:",
+                "off_time": "Off Time:",
+                "delay_off": "Delay Off (s):",
+                "start_timer": "Start Timer",
                 "wifi_title": "Wi-Fi of Retribution",
                 "ssid_label": "SSID:",
                 "password_label": "Password:",
@@ -184,9 +190,6 @@
                 "buzz": "Buzz of Fury",
                 "stutter": "Stutter of Pain",
                 "steady": "Steady Revenge",
-                "delay_label": "Delay (s):",
-                "duration_label": "Duration (s):",
-                "repeat_label": "Repeat (times):",
                 "status_prefix": "Status: ",
                 "alert": "Enter both SSID and Password, Mortal!",
                 "ssid_placeholder": "Enter Wi-Fi SSID",
@@ -194,6 +197,12 @@
             },
             "zh-CN": {
                 "title": "复仇电机控制",
+                "timer_title": "毁灭系统计时器",
+                "current_time": "当前时间:",
+                "on_time": "开启时间:",
+                "off_time": "关闭时间:",
+                "delay_off": "延迟关闭 (秒):",
+                "start_timer": "启动计时器",
                 "wifi_title": "复仇Wi-Fi",
                 "ssid_label": "SSID:",
                 "password_label": "密码:",
@@ -212,9 +221,6 @@
                 "buzz": "狂怒嗡鸣",
                 "stutter": "痛苦颤动",
                 "steady": "稳定复仇",
-                "delay_label": "延迟 (秒):",
-                "duration_label": "持续时间 (秒):",
-                "repeat_label": "重复 (次数):",
                 "status_prefix": "状态: ",
                 "alert": "输入SSID和密码，凡人！",
                 "ssid_placeholder": "输入Wi-Fi SSID",
@@ -222,6 +228,12 @@
             },
             "zh-TW": {
                 "title": "復仇電機控制",
+                "timer_title": "毀滅系統計時器",
+                "current_time": "當前時間:",
+                "on_time": "開啟時間:",
+                "off_time": "關閉時間:",
+                "delay_off": "延遲關閉 (秒):",
+                "start_timer": "啟動計時器",
                 "wifi_title": "復仇Wi-Fi",
                 "ssid_label": "SSID:",
                 "password_label": "密碼:",
@@ -235,14 +247,11 @@
                 "fury_label": "怒火 (0-100%):",
                 "heartbeat": "復仇之心",
                 "wave": "毀滅之波",
-                "quick": "迅速報偽",
+                "quick": "迅速報復",
                 "pulse": "憤怒脈衝",
                 "buzz": "狂怒嗡鳴",
                 "stutter": "痛苦顫動",
                 "steady": "穩定復仇",
-                "delay_label": "延遲 (秒):",
-                "duration_label": "持續時間 (秒):",
-                "repeat_label": "重複 (次數):",
                 "status_prefix": "狀態: ",
                 "alert": "輸入SSID和密碼，凡人！",
                 "ssid_placeholder": "輸入Wi-Fi SSID",
@@ -255,6 +264,7 @@
         const topicM1 = "pico/motor1/control";
         const topicM2 = "pico/motor2/control";
         const topicWifi = "pico/wifi/config";
+        const topicTimer = "pico/system/timer";
         let m1PowerOn = false;
         let m2PowerOn = false;
 
@@ -265,8 +275,8 @@
 
         client.on("connect", () => {
             console.log("Connected to MQTT broker");
-            sendCommand(topicM1, 0, 0, "none", 0, 10, 1);
-            sendCommand(topicM2, 0, 0, "none", 0, 10, 1);
+            sendCommand(topicM1, 0, 0, "none");
+            sendCommand(topicM2, 0, 0, "none");
             updateStatus("Connected to the Shadows");
         });
         client.on("error", (err) => {
@@ -280,10 +290,7 @@
 
         function m1Direction(dir) {
             if (m1PowerOn) {
-                const delay = document.getElementById("m1Delay").value;
-                const duration = document.getElementById("m1Duration").value;
-                const repeat = document.getElementById("m1Repeat").value;
-                sendCommand(topicM1, dir, document.getElementById("m1SpeedSlider").value, "none", delay, duration, repeat);
+                sendCommand(topicM1, dir, document.getElementById("m1SpeedSlider").value, "none");
                 updateStatus("Motor 1 Strikes!");
             }
         }
@@ -291,21 +298,15 @@
         function m1Speed(value) {
             document.getElementById("m1SpeedValue").innerText = value;
             if (m1PowerOn) {
-                const delay = document.getElementById("m1Delay").value;
-                const duration = document.getElementById("m1Duration").value;
-                const repeat = document.getElementById("m1Repeat").value;
-                sendCommand(topicM1, value > 0 ? 1 : 0, value, "none", delay, duration, repeat);
+                sendCommand(topicM1, value > 0 ? 1 : 0, value, "none");
                 updateStatus("Motor 1 Fury Set to " + value + "%");
             }
         }
 
         function m1Pattern(pattern) {
             if (m1PowerOn) {
-                const delay = document.getElementById("m1Delay").value;
-                const duration = document.getElementById("m1Duration").value;
-                const repeat = document.getElementById("m1Repeat").value;
                 sendCommand(topicM1, document.getElementById("m1SpeedSlider").value > 0 ? 1 : 0, 
-                            document.getElementById("m1SpeedSlider").value, pattern, delay, duration, repeat);
+                            document.getElementById("m1SpeedSlider").value, pattern);
                 updateStatus("Motor 1 Unleashes " + pattern);
             }
         }
@@ -327,10 +328,7 @@
 
         function m2Direction(dir) {
             if (m2PowerOn) {
-                const delay = document.getElementById("m2Delay").value;
-                const duration = document.getElementById("m2Duration").value;
-                const repeat = document.getElementById("m2Repeat").value;
-                sendCommand(topicM2, dir, document.getElementById("m2SpeedSlider").value, "none", delay, duration, repeat);
+                sendCommand(topicM2, dir, document.getElementById("m2SpeedSlider").value, "none");
                 updateStatus("Motor 2 Strikes!");
             }
         }
@@ -338,21 +336,15 @@
         function m2Speed(value) {
             document.getElementById("m2SpeedValue").innerText = value;
             if (m2PowerOn) {
-                const delay = document.getElementById("m2Delay").value;
-                const duration = document.getElementById("m2Duration").value;
-                const repeat = document.getElementById("m2Repeat").value;
-                sendCommand(topicM2, value > 0 ? 1 : 0, value, "none", delay, duration, repeat);
+                sendCommand(topicM2, value > 0 ? 1 : 0, value, "none");
                 updateStatus("Motor 2 Fury Set to " + value + "%");
             }
         }
 
         function m2Pattern(pattern) {
             if (m2PowerOn) {
-                const delay = document.getElementById("m2Delay").value;
-                const duration = document.getElementById("m2Duration").value;
-                const repeat = document.getElementById("m2Repeat").value;
                 sendCommand(topicM2, document.getElementById("m2SpeedSlider").value > 0 ? 1 : 0, 
-                            document.getElementById("m2SpeedSlider").value, pattern, delay, duration, repeat);
+                            document.getElementById("m2SpeedSlider").value, pattern);
                 updateStatus("Motor 2 Unleashes " + pattern);
             }
         }
@@ -372,8 +364,8 @@
             });
         }
 
-        function sendCommand(topic, direction, speed, pattern, delay, duration, repeat) {
-            const message = `{"direction": ${direction}, "speed": ${speed}, "pattern": "${pattern}", "delay": ${delay}, "duration": ${duration}, "repeat": ${repeat}}`;
+        function sendCommand(topic, direction, speed, pattern) {
+            const message = `{"direction": ${direction}, "speed": ${speed}, "pattern": "${pattern}"}`;
             client.publish(topic, message, { qos: 0 }, (err) => {
                 if (!err) console.log(`Sent to ${topic}:`, message);
                 else console.error("Publish error:", err);
@@ -401,6 +393,28 @@
             }
         }
 
+        function startTimer() {
+            const onTime = document.getElementById("onTime").value;
+            const offTime = document.getElementById("offTime").value;
+            const delayOff = document.getElementById("delayOff").value;
+            if (onTime && offTime) {
+                const message = `{"on_time": "${onTime}", "off_time": "${offTime}", "delay_off": ${delayOff}}`;
+                client.publish(topicTimer, message, { qos: 0 }, (err) => {
+                    if (!err) {
+                        console.log(`Sent to ${topicTimer}:`, message);
+                        updateStatus(`Timer Set: On at ${onTime}, Off at ${offTime}, Delay ${delayOff}s`);
+                    } else {
+                        console.error("Publish error:", err);
+                        updateStatus("Failed to Set Timer");
+                    }
+                });
+            } else {
+                const lang = document.getElementById("language").value;
+                alert(translations[lang].alert_timer || "Set both On and Off times, Mortal!");
+                updateStatus("Timer Config Incomplete");
+            }
+        }
+
         function updateStatus(message) {
             const lang = document.getElementById("language").value;
             document.getElementById("status").innerText = translations[lang].status_prefix + message;
@@ -425,8 +439,16 @@
             updateStatus("Language Changed to " + (lang === "en" ? "English" : lang === "zh-CN" ? "Simplified Chinese" : "Traditional Chinese"));
         }
 
+        function updateClock() {
+            const now = new Date();
+            const time = now.toTimeString().split(" ")[0].slice(0, 5); // HH:MM
+            document.getElementById("currentTime").innerText = time;
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             changeLanguage();
+            updateClock();
+            setInterval(updateClock, 1000); // Update clock every second
         });
     </script>
 </body>
