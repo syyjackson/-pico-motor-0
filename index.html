@@ -14,18 +14,30 @@
     <div class="motor">
         <h2>Motor 1</h2>
         <button onclick="m1Direction(1)">Forward</button>
-        <button onclick="m1Direction(0)">Stop</button>
+        <button id="m1Stop" onclick="m1ToggleStop()">Stop/Lock</button>
         <button onclick="m1Direction(-1)">Backward</button><br>
         <label>Speed (0-100%): <span id="m1SpeedValue">0</span></label><br>
-        <input type="range" id="m1SpeedSlider" min="0" max="100" value="0" oninput="m1Speed(this.value)">
+        <input type="range" id="m1SpeedSlider" min="0" max="100" value="0" oninput="m1Speed(this.value)"><br>
+        <label>Interval (50-1000ms): <span id="m1IntervalValue">500</span></label><br>
+        <input type="range" id="m1IntervalSlider" min="50" max="1000" value="500" oninput="m1Interval(this.value)"><br>
+        <button onclick="m1Pattern('heartbeat')">Heartbeat</button>
+        <button onclick="m1Pattern('wave')">Wave</button>
+        <button onclick="m1Pattern('quick')">Quick</button>
+        <button onclick="m1Pattern('none')">Steady</button>
     </div>
     <div class="motor">
         <h2>Motor 2</h2>
         <button onclick="m2Direction(1)">Forward</button>
-        <button onclick="m2Direction(0)">Stop</button>
+        <button id="m2Stop" onclick="m2ToggleStop()">Stop/Lock</button>
         <button onclick="m2Direction(-1)">Backward</button><br>
         <label>Speed (0-100%): <span id="m2SpeedValue">0</span></label><br>
-        <input type="range" id="m2SpeedSlider" min="0" max="100" value="0" oninput="m2Speed(this.value)">
+        <input type="range" id="m2SpeedSlider" min="0" max="100" value="0" oninput="m2Speed(this.value)"><br>
+        <label>Interval (50-1000ms): <span id="m2IntervalValue">500</span></label><br>
+        <input type="range" id="m2IntervalSlider" min="50" max="1000" value="500" oninput="m2Interval(this.value)"><br>
+        <button onclick="m2Pattern('heartbeat')">Heartbeat</button>
+        <button onclick="m2Pattern('wave')">Wave</button>
+        <button onclick="m2Pattern('quick')">Quick</button>
+        <button onclick="m2Pattern('none')">Steady</button>
     </div>
 
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
@@ -34,6 +46,8 @@
         const port = 8081;
         const topicM1 = "pico/motor1/control";
         const topicM2 = "pico/motor2/control";
+        let m1Locked = false;
+        let m2Locked = false;
 
         const client = mqtt.connect(`wss://${broker}:${port}`, { 
             clientId: "web_client_" + Math.random().toString(16).substr(2, 8),
@@ -42,41 +56,88 @@
 
         client.on("connect", () => {
             console.log("Connected to MQTT broker");
-            // Initialize motors stopped
-            sendCommand(topicM1, 0, 0);
-            sendCommand(topicM2, 0, 0);
+            sendCommand(topicM1, 0, 0, 500, "none");
+            sendCommand(topicM2, 0, 0, 500, "none");
         });
         client.on("error", (err) => console.error("MQTT error:", err));
         client.on("close", () => console.log("Connection closed"));
 
         function m1Direction(dir) {
-            sendCommand(topicM1, dir, document.getElementById("m1SpeedSlider").value);
+            if (!m1Locked) {
+                sendCommand(topicM1, dir, document.getElementById("m1SpeedSlider").value, 
+                            document.getElementById("m1IntervalSlider").value, "none");
+            }
         }
 
         function m1Speed(value) {
             document.getElementById("m1SpeedValue").innerText = value;
-            sendCommand(topicM1, getDirectionM1(), value);
+            if (!m1Locked) {
+                sendCommand(topicM1, value > 0 ? 1 : 0, value, 
+                            document.getElementById("m1IntervalSlider").value, "none");
+            }
+        }
+
+        function m1Interval(value) {
+            document.getElementById("m1IntervalValue").innerText = value;
+            if (!m1Locked) {
+                sendCommand(topicM1, document.getElementById("m1SpeedSlider").value > 0 ? 1 : 0, 
+                            document.getElementById("m1SpeedSlider").value, value, "none");
+            }
+        }
+
+        function m1Pattern(pattern) {
+            if (!m1Locked) {
+                sendCommand(topicM1, document.getElementById("m1SpeedSlider").value > 0 ? 1 : 0, 
+                            document.getElementById("m1SpeedSlider").value, 
+                            document.getElementById("m1IntervalSlider").value, pattern);
+            }
+        }
+
+        function m1ToggleStop() {
+            m1Locked = !m1Locked;
+            document.getElementById("m1Stop").innerText = m1Locked ? "Unlock" : "Stop/Lock";
+            client.publish(topicM1, `{"lock": ${m1Locked}}`, { qos: 0 });
         }
 
         function m2Direction(dir) {
-            sendCommand(topicM2, dir, document.getElementById("m2SpeedSlider").value);
+            if (!m2Locked) {
+                sendCommand(topicM2, dir, document.getElementById("m2SpeedSlider").value, 
+                            document.getElementById("m2IntervalSlider").value, "none");
+            }
         }
 
         function m2Speed(value) {
             document.getElementById("m2SpeedValue").innerText = value;
-            sendCommand(topicM2, getDirectionM2(), value);
+            if (!m2Locked) {
+                sendCommand(topicM2, value > 0 ? 1 : 0, value, 
+                            document.getElementById("m2IntervalSlider").value, "none");
+            }
         }
 
-        function getDirectionM1() {
-            return document.getElementById("m1SpeedSlider").value > 0 ? 1 : 0;
+        function m2Interval(value) {
+            document.getElementById("m2IntervalValue").innerText = value;
+            if (!m2Locked) {
+                sendCommand(topicM2, document.getElementById("m2SpeedSlider").value > 0 ? 1 : 0, 
+                            document.getElementById("m2SpeedSlider").value, value, "none");
+            }
         }
 
-        function getDirectionM2() {
-            return document.getElementById("m2SpeedSlider").value > 0 ? 1 : 0;
+        function m2Pattern(pattern) {
+            if (!m2Locked) {
+                sendCommand(topicM2, document.getElementById("m2SpeedSlider").value > 0 ? 1 : 0, 
+                            document.getElementById("m2SpeedSlider").value, 
+                            document.getElementById("m2IntervalSlider").value, pattern);
+            }
         }
 
-        function sendCommand(topic, direction, speed) {
-            const message = `{"direction": ${direction}, "speed": ${speed}}`;
+        function m2ToggleStop() {
+            m2Locked = !m2Locked;
+            document.getElementById("m2Stop").innerText = m2Locked ? "Unlock" : "Stop/Lock";
+            client.publish(topicM2, `{"lock": ${m2Locked}}`, { qos: 0 });
+        }
+
+        function sendCommand(topic, direction, speed, interval, pattern) {
+            const message = `{"direction": ${direction}, "speed": ${speed}, "interval": ${interval}, "pattern": "${pattern}"}`;
             client.publish(topic, message, { qos: 0 }, (err) => {
                 if (!err) console.log(`Sent to ${topic}:`, message);
                 else console.error("Publish error:", err);
