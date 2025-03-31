@@ -192,6 +192,7 @@
                 "steady": "Steady Revenge",
                 "status_prefix": "Status: ",
                 "alert": "Enter both SSID and Password, Mortal!",
+                "alert_timer": "Set both On and Off times, Mortal!",
                 "ssid_placeholder": "Enter Wi-Fi SSID",
                 "password_placeholder": "Enter Wi-Fi Password"
             },
@@ -223,6 +224,7 @@
                 "steady": "稳定复仇",
                 "status_prefix": "状态: ",
                 "alert": "输入SSID和密码，凡人！",
+                "alert_timer": "设置开启和关闭时间，凡人！",
                 "ssid_placeholder": "输入Wi-Fi SSID",
                 "password_placeholder": "输入Wi-Fi密码"
             },
@@ -254,6 +256,7 @@
                 "steady": "穩定復仇",
                 "status_prefix": "狀態: ",
                 "alert": "輸入SSID和密碼，凡人！",
+                "alert_timer": "設置開啟和關閉時間，凡人！",
                 "ssid_placeholder": "輸入Wi-Fi SSID",
                 "password_placeholder": "輸入Wi-Fi密碼"
             }
@@ -410,7 +413,7 @@
                 });
             } else {
                 const lang = document.getElementById("language").value;
-                alert(translations[lang].alert_timer || "Set both On and Off times, Mortal!");
+                alert(translations[lang].alert_timer);
                 updateStatus("Timer Config Incomplete");
             }
         }
