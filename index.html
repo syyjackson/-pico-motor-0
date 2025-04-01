@@ -279,15 +279,13 @@
                         m1PowerOn = data.state === 1;
                         m1RandomOn = false;
                         document.getElementById("m1Power").innerText = m1PowerOn ? translations[lang].silence : translations[lang].awaken;
-                        document.getElementById("m1RandomPower").innerText = translations[lang].random_power;
-                        togglePowerControls(1, m1PowerOn);
+                        togglePowerControls(1, m1PowerOn, false);
                         updateStatus(m1PowerOn ? "Motor 1 Awakens!" : "Motor 1 Silenced");
                     } else if (data.motor === 2) {
                         m2PowerOn = data.state === 1;
                         m2RandomOn = false;
                         document.getElementById("m2Power").innerText = m2PowerOn ? translations[lang].silence : translations[lang].awaken;
-                        document.getElementById("m2RandomPower").innerText = translations[lang].random_power;
-                        togglePowerControls(2, m2PowerOn);
+                        togglePowerControls(2, m2PowerOn, false);
                         updateStatus(m2PowerOn ? "Motor 2 Awakens!" : "Motor 2 Silenced");
                     }
                 } else if (data.status === "random_set") {
@@ -295,25 +293,25 @@
                         m1RandomOn = true;
                         m1PowerOn = false;
                         document.getElementById("m1RandomPower").innerText = translations[lang].random_stop;
-                        togglePowerControls(1, true);
+                        togglePowerControls(1, false, true);
                         updateStatus("Motor 1 Random Power On");
                     } else if (data.motor === 2) {
                         m2RandomOn = true;
                         m2PowerOn = false;
                         document.getElementById("m2RandomPower").innerText = translations[lang].random_stop;
-                        togglePowerControls(2, true);
+                        togglePowerControls(2, false, true);
                         updateStatus("Motor 2 Random Power On");
                     }
                 } else if (data.status === "random_stopped") {
                     if (data.motor === 1) {
                         m1RandomOn = false;
                         document.getElementById("m1RandomPower").innerText = translations[lang].random_power;
-                        togglePowerControls(1, false);
+                        togglePowerControls(1, false, false);
                         updateStatus("Motor 1 Random Power Stopped");
                     } else if (data.motor === 2) {
                         m2RandomOn = false;
                         document.getElementById("m2RandomPower").innerText = translations[lang].random_power;
-                        togglePowerControls(2, false);
+                        togglePowerControls(2, false, false);
                         updateStatus("Motor 2 Random Power Stopped");
                     }
                 }
@@ -361,7 +359,6 @@
         }
 
         function m1ToggleRandom() {
-            const wasRandomOn = m1RandomOn;
             m1RandomOn = !m1RandomOn;
             const lang = document.getElementById("language").value;
             document.getElementById("m1RandomPower").innerText = m1RandomOn ? translations[lang].random_stop : translations[lang].random_power;
@@ -407,7 +404,6 @@
         }
 
         function m2ToggleRandom() {
-            const wasRandomOn = m2RandomOn;
             m2RandomOn = !m2RandomOn;
             const lang = document.getElementById("language").value;
             document.getElementById("m2RandomPower").innerText = m2RandomOn ? translations[lang].random_stop : translations[lang].random_power;
@@ -451,10 +447,13 @@
             }
         }
 
-        function togglePowerControls(motor, isActive) {
+        function togglePowerControls(motor, normalActive, randomActive) {
             const normalControls = document.getElementById(`m${motor}NormalControls`);
             const randomControls = document.getElementById(`m${motor}RandomControls`);
-            if (isActive) {
+            if (normalActive) {
+                normalControls.classList.remove("hidden");
+                randomControls.classList.add("hidden");
+            } else if (randomActive) {
                 normalControls.classList.add("hidden");
                 randomControls.classList.remove("hidden");
             } else {
@@ -506,8 +505,8 @@
             changeLanguage();
             updatePatternButtons(1, "none");
             updatePatternButtons(2, "none");
-            togglePowerControls(1, false);
-            togglePowerControls(2, false);
+            togglePowerControls(1, false, false);
+            togglePowerControls(2, false, false);
         });
     </script>
 </body>
