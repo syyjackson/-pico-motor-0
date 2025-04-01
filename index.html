@@ -123,8 +123,8 @@
             <label><span data-lang="current_time">Current Time:</span> <span id="currentTime">--:--</span></label>
             <label><span data-lang="start_time">Start Time:</span> <input type="time" id="startTime"></label>
             <label><span data-lang="period">Period (hours):</span> <input type="number" id="period" min="1" value="1" step="1"></label>
-            <button onclick="randomAttack()" data-lang="random_attack">Random Attack</button>
-            <button onclick="stopTimer()" data-lang="stop_timer">Stop Timer</button>
+            <button id="randomAttackBtn" onclick="randomAttack()" data-lang="random_attack">Random Attack</button>
+            <button id="stopTimerBtn" onclick="stopTimer()" data-lang="stop_timer" style="display: none;">Stop Timer</button>
         </div>
         <div class="wifi-config">
             <h2 data-lang="wifi_title">Wi-Fi of Retribution</h2>
@@ -271,6 +271,7 @@
         let m2PowerOn = false;
         let m1SelectedPattern = "none";
         let m2SelectedPattern = "none";
+        let timerActive = false;
 
         const client = mqtt.connect(`wss://${broker}:${port}`, { 
             clientId: "web_client_" + Math.random().toString(16).substr(2, 8),
@@ -284,20 +285,29 @@
             sendCommand(topicM2, 0, 0, "none");
             updateStatus("Connected to the Shadows");
         });
+
         client.on("message", (topic, message) => {
             if (topic === topicFeedback) {
                 const data = JSON.parse(message.toString());
                 if (data.status === "timer_set") {
                     updateStatus("Random Attack Set: Period " + data.period + "h");
+                    timerActive = true;
+                    document.getElementById("randomAttackBtn").style.display = "none";
+                    document.getElementById("stopTimerBtn").style.display = "inline";
                 } else if (data.status === "timer_stopped") {
                     updateStatus("Timer Stopped");
+                    timerActive = false;
+                    document.getElementById("randomAttackBtn").style.display = "inline";
+                    document.getElementById("stopTimerBtn").style.display = "none";
                 }
             }
         });
+
         client.on("error", (err) => {
             console.error("MQTT error:", err);
             updateStatus("Error in the Abyss: " + err);
         });
+
         client.on("close", () => {
             console.log("Connection closed");
             updateStatus("Connection Lost to the Void");
@@ -417,22 +427,18 @@
             const period = document.getElementById("period").value;
             const lang = document.getElementById("language").value;
             if (startTime && period) {
-                // Send current slider values and patterns before starting timer
                 const m1SpeedValue = document.getElementById("m1SpeedSlider").value;
                 const m2SpeedValue = document.getElementById("m2SpeedSlider").value;
                 sendCommand(topicM1, m1SpeedValue > 0 ? 1 : 0, m1SpeedValue, m1SelectedPattern);
                 sendCommand(topicM2, m2SpeedValue > 0 ? 1 : 0, m2SpeedValue, m2SelectedPattern);
                 
-                // Turn off motors
                 if (m1PowerOn) m1TogglePower();
                 if (m2PowerOn) m2TogglePower();
                 
-                // Start the timer
                 const message = `{"start_time": "${startTime}", "period": ${period}}`;
                 client.publish(topicTimer, message, { qos: 0 }, (err) => {
                     if (!err) {
                         console.log(`Sent to ${topicTimer}:`, message);
-                        updateStatus(`Random Attack Sent: Start at ${startTime}, Period ${period}h`);
                     } else {
                         console.error("Publish error:", err);
                         updateStatus("Failed to Set Random Attack");
@@ -448,7 +454,6 @@
             client.publish(topicTimer, '{"stop": 1}', { qos: 0 }, (err) => {
                 if (!err) {
                     console.log(`Sent to ${topicTimer}: {"stop": 1}`);
-                    updateStatus("Stop Timer Sent");
                 } else {
                     console.error("Publish error:", err);
                     updateStatus("Failed to Stop Timer");
