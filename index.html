@@ -1,519 +1,86 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Vengeance Motor Control</title>
-    <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor Control</title>
+    <script src="https://unpkg.com/paho-mqtt@1.1.0/paho-mqtt.js"></script>
     <style>
-        body {
-            font-family: 'Creepster', cursive;
-            background: linear-gradient(135deg, #1a1a1a 0%, #4b0000 100%);
-            color: #ff4d4d;
-            text-align: center;
-            padding: 20px;
-            margin: 0;
-        }
-        h1 {
-            font-size: 3em;
-            text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
-            margin-bottom: 20px;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 0 15px #ff4d4d;
-            position: relative;
-        }
-        .wifi-config, .motor {
-            margin: 20px 0;
-            padding: 15px;
-            background: #2b0000;
-            border: 2px solid #ff4d4d;
-            border-radius: 10px;
-        }
-        h2 {
-            font-size: 2em;
-            margin: 10px 0;
-            text-shadow: 0 0 5px #ff0000;
-        }
-        button {
-            background: #ff4d4d;
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            margin: 5px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-family: 'Creepster', cursive;
-            font-size: 1.2em;
-            transition: all 0.3s;
-        }
-        button:hover {
-            background: #ff9999;
-            box-shadow: 0 0 10px #ff4d4d;
-        }
-        button.pressed {
-            background: #ff9999;
-            box-shadow: inset 0 0 10px #ff4d4d;
-        }
-        input[type="range"] {
-            width: 150px;
-            accent-color: #ff4d4d;
-            margin: 5px;
-            background: #1a1a1a;
-            color: #ff4d4d;
-            border: 2px solid #ff4d4d;
-            border-radius: 5px;
-            padding: 5px;
-        }
-        input[type="text"] {
-            padding: 8px;
-            margin: 5px;
-            border: 2px solid #ff4d4d;
-            border-radius: 5px;
-            background: #1a1a1a;
-            color: #ff4d4d;
-            font-family: Arial, sans-serif;
-        }
-        label {
-            font-size: 1.3em;
-            margin: 10px 0;
-            display: block;
-        }
-        .status {
-            margin-top: 20px;
-            font-size: 1.2em;
-            color: #ff9999;
-            text-shadow: 0 0 5px #ff4d4d;
-        }
-        .skull {
-            font-size: 3em;
-            margin-bottom: 20px;
-        }
-        .lang-select {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-        }
-        select {
-            padding: 5px;
-            background: #ff4d4d;
-            color: #000;
-            border: none;
-            border-radius: 5px;
-            font-family: Arial, sans-serif;
-        }
-        .normal-controls, .random-controls {
-            display: inline-block;
-        }
-        .hidden {
-            display: none;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; }
+        #status { margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="lang-select">
-            <select id="language" onchange="changeLanguage()">
-                <option value="en">English</option>
-                <option value="zh-CN">简体中文</option>
-                <option value="zh-TW">繁體中文</option>
-            </select>
-        </div>
-        <h1 data-lang="title">Vengeance Motor Control</h1>
-        <div class="skull">💀</div>
-        <div class="wifi-config">
-            <h2 data-lang="wifi_title">Wi-Fi of Retribution</h2>
-            <label><span data-lang="ssid_label">SSID:</span> <input type="text" id="wifiSSID" placeholder="Enter Wi-Fi SSID"></label>
-            <label><span data-lang="password_label">Password:</span> <input type="text" id="wifiPassword" placeholder="Enter Wi-Fi Password"></label>
-            <button onclick="saveWifiConfig()" data-lang="wifi_button">Unleash Connection</button>
-        </div>
-        <div class="motor">
-            <h2 data-lang="motor1_title">Motor 1 - Blade of Wrath</h2>
-            <div class="normal-controls" id="m1NormalControls">
-                <button id="m1Power" onclick="m1TogglePower()" data-lang="awaken">Awaken</button>
-            </div>
-            <div class="random-controls" id="m1RandomControls">
-                <button id="m1RandomPower" onclick="m1ToggleRandom()" data-lang="random_power">Random Power On</button>
-            </div><br>
-            <label><span data-lang="fury_label">Fury (0-100%):</span> <span id="m1SpeedValue">0</span></label>
-            <input type="range" id="m1SpeedSlider" min="0" max="100" value="0" oninput="m1Speed(this.value)"><br>
-            <button id="m1Heartbeat" onclick="m1Pattern('heartbeat')" data-lang="heartbeat">Heart of Vengeance</button>
-            <button id="m1Wave" onclick="m1Pattern('wave')" data-lang="wave">Wave of Doom</button>
-            <button id="m1Quick" onclick="m1Pattern('quick')" data-lang="quick">Swift Retribution</button>
-            <button id="m1Pulse" onclick="m1Pattern('pulse')" data-lang="pulse">Pulse of Rage</button>
-            <button id="m1Buzz" onclick="m1Pattern('buzz')" data-lang="buzz">Buzz of Fury</button>
-            <button id="m1Stutter" onclick="m1Pattern('stutter')" data-lang="stutter">Stutter of Pain</button>
-            <button id="m1None" onclick="m1Pattern('none')" data-lang="steady">Steady Revenge</button>
-        </div>
-        <div class="motor">
-            <h2 data-lang="motor2_title">Motor 2 - Hammer of Justice</h2>
-            <div class="normal-controls" id="m2NormalControls">
-                <button id="m2Power" onclick="m2TogglePower()" data-lang="awaken">Awaken</button>
-            </div>
-            <div class="random-controls" id="m2RandomControls">
-                <button id="m2RandomPower" onclick="m2ToggleRandom()" data-lang="random_power">Random Power On</button>
-            </div><br>
-            <label><span data-lang="fury_label">Fury (0-100%):</span> <span id="m2SpeedValue">0</span></label>
-            <input type="range" id="m2SpeedSlider" min="0" max="100" value="0" oninput="m2Speed(this.value)"><br>
-            <button id="m2Heartbeat" onclick="m2Pattern('heartbeat')" data-lang="heartbeat">Heart of Vengeance</button>
-            <button id="m2Wave" onclick="m2Pattern('wave')" data-lang="wave">Wave of Doom</button>
-            <button id="m2Quick" onclick="m2Pattern('quick')" data-lang="quick">Swift Retribution</button>
-            <button id="m2Pulse" onclick="m2Pattern('pulse')" data-lang="pulse">Pulse of Rage</button>
-            <button id="m2Buzz" onclick="m2Pattern('buzz')" data-lang="buzz">Buzz of Fury</button>
-            <button id="m2Stutter" onclick="m2Pattern('stutter')" data-lang="stutter">Stutter of Pain</button>
-            <button id="m2None" onclick="m2Pattern('none')" data-lang="steady">Steady Revenge</button>
-        </div>
-        <div class="status" id="status" data-lang="status_prefix">Status: Awaiting Your Command...</div>
-    </div>
+    <h1>Motor Control</h1>
+    <h2>Motor 1</h2>
+    <button onclick="toggleMotor1(true)">Motor 1 ON</button>
+    <button onclick="toggleMotor1(false)">Motor 1 OFF</button>
+    <input type="number" id="m1Speed" placeholder="Speed (0-100)" min="0" max="100">
+    <input type="text" id="m1Pattern" placeholder="Pattern (e.g., none)">
+    <h2>Motor 2</h2>
+    <button onclick="toggleMotor2(true)">Motor 2 ON</button>
+    <button onclick="toggleMotor2(false)">Motor 2 OFF</button>
+    <input type="number" id="m2Speed" placeholder="Speed (0-100)" min="0" max="100">
+    <input type="text" id="m2Pattern" placeholder="Pattern (e.g., none)">
+    <div id="status">Status: Disconnected</div>
 
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script>
-        const translations = {
-            "en": {
-                "title": "Vengeance Motor Control",
-                "wifi_title": "Wi-Fi of Retribution",
-                "ssid_label": "SSID:",
-                "password_label": "Password:",
-                "wifi_button": "Unleash Connection",
-                "motor1_title": "Motor 1 - Blade of Wrath",
-                "motor2_title": "Motor 2 - Hammer of Justice",
-                "awaken": "Awaken",
-                "silence": "Silence",
-                "random_power": "Random Power On",
-                "random_stop": "Stop Random",
-                "fury_label": "Fury (0-100%):",
-                "heartbeat": "Heart of Vengeance",
-                "wave": "Wave of Doom",
-                "quick": "Swift Retribution",
-                "pulse": "Pulse of Rage",
-                "buzz": "Buzz of Fury",
-                "stutter": "Stutter of Pain",
-                "steady": "Steady Revenge",
-                "status_prefix": "Status: ",
-                "alert": "Enter both SSID and Password, Mortal!"
-            },
-            "zh-CN": {
-                "title": "复仇电机控制",
-                "wifi_title": "复仇Wi-Fi",
-                "ssid_label": "SSID:",
-                "password_label": "密码:",
-                "wifi_button": "释放连接",
-                "motor1_title": "电机1 - 愤怒之刃",
-                "motor2_title": "电机2 - 正义之锤",
-                "awaken": "唤醒",
-                "silence": "沉默",
-                "random_power": "随机电源开启",
-                "random_stop": "停止随机",
-                "fury_label": "怒火 (0-100%):",
-                "heartbeat": "复仇之心",
-                "wave": "毁灭之波",
-                "quick": "迅速报复",
-                "pulse": "愤怒脉冲",
-                "buzz": "狂怒嗡鸣",
-                "stutter": "痛苦颤动",
-                "steady": "稳定复仇",
-                "status_prefix": "状态: ",
-                "alert": "输入SSID和密码，凡人！"
-            },
-            "zh-TW": {
-                "title": "復仇電機控制",
-                "wifi_title": "復仇Wi-Fi",
-                "ssid_label": "SSID:",
-                "password_label": "密碼:",
-                "wifi_button": "釋放連接",
-                "motor1_title": "電機1 - 憤怒之刃",
-                "motor2_title": "電機2 - 正義之錘",
-                "awaken": "喚醒",
-                "silence": "沉默",
-                "random_power": "隨機電源開啟",
-                "random_stop": "停止隨機",
-                "fury_label": "怒火 (0-100%):",
-                "heartbeat": "復仇之心",
-                "wave": "毀滅之波",
-                "quick": "迅速報復",
-                "pulse": "憤怒脈衝",
-                "buzz": "狂怒嗡鳴",
-                "stutter": "痛苦顫動",
-                "steady": "穩定復仇",
-                "status_prefix": "狀態: ",
-                "alert": "輸入SSID和密碼，凡人！"
-            }
-        };
+        // MQTT Client Setup
+        const client = new Paho.MQTT.Client("test.mosquitto.org", 8081, "web_client_" + Math.random().toString(36).substr(2, 9));
+        client.onConnectionLost = onConnectionLost;
+        client.onMessageArrived = onMessageArrived;
 
-        const broker = "test.mosquitto.org";
-        const port = 8081;
-        const topicM1 = "pico/motor1/control";
-        const topicM2 = "pico/motor2/control";
-        const topicWifi = "pico/wifi/config";
-        const topicRandom = "pico/system/random";
-        const topicFeedback = "pico/system/feedback";
-        let m1PowerOn = false;
-        let m1RandomOn = false;
-        let m2PowerOn = false;
-        let m2RandomOn = false;
-        let m1SelectedPattern = "none";
-        let m2SelectedPattern = "none";
-
-        const client = mqtt.connect(`wss://${broker}:${port}`, { 
-            clientId: "web_client_" + Math.random().toString(16).substr(2, 8),
-            keepalive: 60
-        });
-
-        client.on("connect", () => {
+        function onConnect() {
             console.log("Connected to MQTT broker");
-            client.subscribe(topicFeedback);
-            sendCommand(topicM1, 0, "none");
-            sendCommand(topicM2, 0, "none");
-            updateStatus("Connected to the Shadows");
-        });
-
-        client.on("message", (topic, message) => {
-            if (topic === topicFeedback) {
-                const data = JSON.parse(message.toString());
-                const lang = document.getElementById("language").value;
-                if (data.status === "power") {
-                    if (data.motor === 1) {
-                        m1PowerOn = data.state === 1;
-                        m1RandomOn = false;
-                        document.getElementById("m1Power").innerText = m1PowerOn ? translations[lang].silence : translations[lang].awaken;
-                        document.getElementById("m1SpeedSlider").value = data.speed;
-                        document.getElementById("m1SpeedValue").innerText = data.speed;
-                        togglePowerControls(1, m1PowerOn, false);
-                        updateStatus(m1PowerOn ? `Motor 1 Awakens at ${data.speed}%!` : "Motor 1 Silenced");
-                    } else if (data.motor === 2) {
-                        m2PowerOn = data.state === 1;
-                        m2RandomOn = false;
-                        document.getElementById("m2Power").innerText = m2PowerOn ? translations[lang].silence : translations[lang].awaken;
-                        document.getElementById("m2SpeedSlider").value = data.speed;
-                        document.getElementById("m2SpeedValue").innerText = data.speed;
-                        togglePowerControls(2, m2PowerOn, false);
-                        updateStatus(m2PowerOn ? `Motor 2 Awakens at ${data.speed}%!` : "Motor 2 Silenced");
-                    }
-                } else if (data.status === "random_set") {
-                    if (data.motor === 1) {
-                        m1RandomOn = true;
-                        m1PowerOn = false;
-                        document.getElementById("m1RandomPower").innerText = translations[lang].random_stop;
-                        document.getElementById("m1SpeedSlider").value = data.speed;
-                        document.getElementById("m1SpeedValue").innerText = data.speed;
-                        togglePowerControls(1, false, true);
-                        updateStatus(`Motor 1 Random Power On at ${data.speed}%`);
-                    } else if (data.motor === 2) {
-                        m2RandomOn = true;
-                        m2PowerOn = false;
-                        document.getElementById("m2RandomPower").innerText = translations[lang].random_stop;
-                        document.getElementById("m2SpeedSlider").value = data.speed;
-                        document.getElementById("m2SpeedValue").innerText = data.speed;
-                        togglePowerControls(2, false, true);
-                        updateStatus(`Motor 2 Random Power On at ${data.speed}%`);
-                    }
-                } else if (data.status === "random_stopped") {
-                    if (data.motor === 1) {
-                        m1RandomOn = false;
-                        document.getElementById("m1RandomPower").innerText = translations[lang].random_power;
-                        document.getElementById("m1SpeedSlider").value = data.speed;  // Preserve speed
-                        document.getElementById("m1SpeedValue").innerText = data.speed;
-                        togglePowerControls(1, m1PowerOn, false);
-                        updateStatus(`Motor 1 Random Power Stopped, Speed preserved at ${data.speed}%`);
-                    } else if (data.motor === 2) {
-                        m2RandomOn = false;
-                        document.getElementById("m2RandomPower").innerText = translations[lang].random_power;
-                        document.getElementById("m2SpeedSlider").value = data.speed;
-                        document.getElementById("m2SpeedValue").innerText = data.speed;
-                        togglePowerControls(2, m2PowerOn, false);
-                        updateStatus(`Motor 2 Random Power Stopped, Speed preserved at ${data.speed}%`);
-                    }
-                }
-            }
-        });
-
-        client.on("error", (err) => {
-            console.error("MQTT error:", err);
-            updateStatus("Error in the Abyss: " + err);
-        });
-
-        client.on("close", () => {
-            console.log("Connection closed");
-            updateStatus("Connection Lost to the Void");
-        });
-
-        function m1Speed(value) {
-            document.getElementById("m1SpeedValue").innerText = value;
-            sendCommand(topicM1, value, m1SelectedPattern);
-            updateStatus(`Motor 1 Fury Set to ${value}%`);
+            document.getElementById("status").innerText = "Status: Connected";
+            client.subscribe("pico/system/feedback");
         }
 
-        function m1Pattern(pattern) {
-            m1SelectedPattern = pattern;
-            const speed = document.getElementById("m1SpeedSlider").value;
-            sendCommand(topicM1, speed, pattern);
-            updateStatus(`Motor 1 Unleashes ${pattern} at ${speed}%`);
-            updatePatternButtons(1, pattern);
-        }
-
-        function m1TogglePower() {
-            m1PowerOn = !m1PowerOn;
-            const lang = document.getElementById("language").value;
-            document.getElementById("m1Power").innerText = m1PowerOn ? translations[lang].silence : translations[lang].awaken;
-            const speed = document.getElementById("m1SpeedSlider").value;
-            client.publish(topicM1, `{"power": ${m1PowerOn ? 1 : 0}, "speed": ${speed}, "pattern": "${m1SelectedPattern}"}`, { qos: 0 }, (err) => {
-                if (err) {
-                    console.error("Publish error:", err);
-                    updateStatus("Error Toggling Motor 1 Power");
-                }
-            });
-        }
-
-        function m1ToggleRandom() {
-            m1RandomOn = !m1RandomOn;
-            const lang = document.getElementById("language").value;
-            document.getElementById("m1RandomPower").innerText = m1RandomOn ? translations[lang].random_stop : translations[lang].random_power;
-            const speed = document.getElementById("m1SpeedSlider").value;
-            const message = m1RandomOn ? `{"motor": 1, "random": 1}` : `{"motor": 1, "stop": 1}`;
-            client.publish(topicRandom, message, { qos: 0 }, (err) => {
-                if (err) {
-                    console.error("Publish error:", err);
-                    updateStatus("Failed to Toggle Random Power for Motor 1");
-                }
-            });
-            if (m1RandomOn) sendCommand(topicM1, speed, m1SelectedPattern);
-        }
-
-        function m2Speed(value) {
-            document.getElementById("m2SpeedValue").innerText = value;
-            sendCommand(topicM2, value, m2SelectedPattern);
-            updateStatus(`Motor 2 Fury Set to ${value}%`);
-        }
-
-        function m2Pattern(pattern) {
-            m2SelectedPattern = pattern;
-            const speed = document.getElementById("m2SpeedSlider").value;
-            sendCommand(topicM2, speed, pattern);
-            updateStatus(`Motor 2 Unleashes ${pattern} at ${speed}%`);
-            updatePatternButtons(2, pattern);
-        }
-
-        function m2TogglePower() {
-            m2PowerOn = !m2PowerOn;
-            const lang = document.getElementById("language").value;
-            document.getElementById("m2Power").innerText = m2PowerOn ? translations[lang].silence : translations[lang].awaken;
-            const speed = document.getElementById("m2SpeedSlider").value;
-            client.publish(topicM2, `{"power": ${m2PowerOn ? 1 : 0}, "speed": ${speed}, "pattern": "${m2SelectedPattern}"}`, { qos: 0 }, (err) => {
-                if (err) {
-                    console.error("Publish error:", err);
-                    updateStatus("Error Toggling Motor 2 Power");
-                }
-            });
-        }
-
-        function m2ToggleRandom() {
-            m2RandomOn = !m2RandomOn;
-            const lang = document.getElementById("language").value;
-            document.getElementById("m2RandomPower").innerText = m2RandomOn ? translations[lang].random_stop : translations[lang].random_power;
-            const speed = document.getElementById("m2SpeedSlider").value;
-            const message = m2RandomOn ? `{"motor": 2, "random": 1}` : `{"motor": 2, "stop": 1}`;
-            client.publish(topicRandom, message, { qos: 0 }, (err) => {
-                if (err) {
-                    console.error("Publish error:", err);
-                    updateStatus("Failed to Toggle Random Power for Motor 2");
-                }
-            });
-            if (m2RandomOn) sendCommand(topicM2, speed, m2SelectedPattern);
-        }
-
-        function sendCommand(topic, speed, pattern) {
-            const message = `{"speed": ${speed}, "pattern": "${pattern}"}`;
-            client.publish(topic, message, { qos: 0 }, (err) => {
-                if (!err) console.log(`Sent to ${topic}:`, message);
-                else console.error("Publish error:", err);
-            });
-        }
-
-        function saveWifiConfig() {
-            const ssid = document.getElementById("wifiSSID").value;
-            const password = document.getElementById("wifiPassword").value;
-            const lang = document.getElementById("language").value;
-            if (ssid && password) {
-                const message = `{"ssid": "${ssid}", "password": "${password}"}`;
-                client.publish(topicWifi, message, { qos: 0 }, (err) => {
-                    if (!err) {
-                        console.log(`Sent to ${topicWifi}:`, message);
-                        updateStatus("Wi-Fi Unleashed: " + ssid);
-                    } else {
-                        console.error("Publish error:", err);
-                        updateStatus("Failed to Unleash Wi-Fi");
-                    }
-                });
-            } else {
-                alert(translations[lang].alert);
-                updateStatus("Wi-Fi Config Incomplete");
+        function onConnectionLost(responseObject) {
+            if (responseObject.errorCode !== 0) {
+                console.log("Connection lost: " + responseObject.errorMessage);
+                document.getElementById("status").innerText = "Status: Disconnected";
             }
         }
 
-        function togglePowerControls(motor, normalActive, randomActive) {
-            const normalControls = document.getElementById(`m${motor}NormalControls`);
-            const randomControls = document.getElementById(`m${motor}RandomControls`);
-            if (normalActive) {
-                normalControls.classList.remove("hidden");
-                randomControls.classList.add("hidden");
-            } else if (randomActive) {
-                normalControls.classList.add("hidden");
-                randomControls.classList.remove("hidden");
-            } else {
-                normalControls.classList.remove("hidden");
-                randomControls.classList.remove("hidden");
-            }
+        function onMessageArrived(message) {
+            console.log("Message received: " + message.payloadString);
+            document.getElementById("status").innerText = "Status: " + message.payloadString;
         }
 
-        function updatePatternButtons(motor, pattern) {
-            const prefix = motor === 1 ? "m1" : "m2";
-            const patterns = ["heartbeat", "wave", "quick", "pulse", "buzz", "stutter", "none"];
-            patterns.forEach(p => {
-                const btn = document.getElementById(`${prefix}${p.charAt(0).toUpperCase() + p.slice(1)}`);
-                btn.classList.toggle("pressed", p === pattern);
-            });
-        }
-
-        function updateStatus(message) {
-            const lang = document.getElementById("language").value;
-            document.getElementById("status").innerText = translations[lang].status_prefix + message;
-        }
-
-        function changeLanguage() {
-            const lang = document.getElementById("language").value;
-            document.querySelectorAll("[data-lang]").forEach(element => {
-                const key = element.getAttribute("data-lang");
-                if (element.tagName === "BUTTON") {
-                    if (element.id === "m1Power") {
-                        element.innerText = m1PowerOn ? translations[lang].silence : translations[lang].awaken;
-                    } else if (element.id === "m2Power") {
-                        element.innerText = m2PowerOn ? translations[lang].silence : translations[lang].awaken;
-                    } else if (element.id === "m1RandomPower") {
-                        element.innerText = m1RandomOn ? translations[lang].random_stop : translations[lang].random_power;
-                    } else if (element.id === "m2RandomPower") {
-                        element.innerText = m2RandomOn ? translations[lang].random_stop : translations[lang].random_power;
-                    } else {
-                        element.innerText = translations[lang][key];
-                    }
-                } else if (element.tagName === "SPAN") {
-                    element.innerText = translations[lang][key];
-                } else {
-                    element.innerText = translations[lang][key];
-                }
-            });
-            updateStatus("Language Changed to " + (lang === "en" ? "English" : lang === "zh-CN" ? "Simplified Chinese" : "Traditional Chinese"));
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            changeLanguage();
-            updatePatternButtons(1, "none");
-            updatePatternButtons(2, "none");
-            togglePowerControls(1, false, false);
-            togglePowerControls(2, false, false);
+        client.connect({
+            onSuccess: onConnect,
+            useSSL: true,
+            reconnect: true
         });
+
+        // Motor Control Functions
+        function toggleMotor1(power) {
+            const speed = parseInt(document.getElementById("m1Speed").value) || 0;
+            const pattern = document.getElementById("m1Pattern").value || "none";
+            const message = new Paho.MQTT.Message(JSON.stringify({
+                power: power ? 1 : 0,
+                speed: speed,
+                pattern: pattern
+            }));
+            message.destinationName = "pico/motor1/control";
+            client.send(message);
+            console.log(`Sent to Motor 1: power=${power}, speed=${speed}, pattern=${pattern}`);
+        }
+
+        function toggleMotor2(power) {
+            const speed = parseInt(document.getElementById("m2Speed").value) || 0;
+            const pattern = document.getElementById("m2Pattern").value || "none";
+            const message = new Paho.MQTT.Message(JSON.stringify({
+                power: power ? 1 : 0,
+                speed: speed,
+                pattern: pattern
+            }));
+            message.destinationName = "pico/motor2/control";
+            client.send(message);
+            console.log(`Sent to Motor 2: power=${power}, speed=${speed}, pattern=${pattern}`);
+        }
     </script>
 </body>
 </html>
