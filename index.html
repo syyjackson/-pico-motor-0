@@ -274,26 +274,46 @@
             if (topic === topicFeedback) {
                 const data = JSON.parse(message.toString());
                 const lang = document.getElementById("language").value;
-                if (data.status === "random_set") {
+                if (data.status === "power") {
+                    if (data.motor === 1) {
+                        m1PowerOn = data.state === 1;
+                        m1RandomOn = false;
+                        document.getElementById("m1Power").innerText = m1PowerOn ? translations[lang].silence : translations[lang].awaken;
+                        document.getElementById("m1RandomPower").innerText = translations[lang].random_power;
+                        togglePowerControls(1, m1PowerOn);
+                        updateStatus(m1PowerOn ? "Motor 1 Awakens!" : "Motor 1 Silenced");
+                    } else if (data.motor === 2) {
+                        m2PowerOn = data.state === 1;
+                        m2RandomOn = false;
+                        document.getElementById("m2Power").innerText = m2PowerOn ? translations[lang].silence : translations[lang].awaken;
+                        document.getElementById("m2RandomPower").innerText = translations[lang].random_power;
+                        togglePowerControls(2, m2PowerOn);
+                        updateStatus(m2PowerOn ? "Motor 2 Awakens!" : "Motor 2 Silenced");
+                    }
+                } else if (data.status === "random_set") {
                     if (data.motor === 1) {
                         m1RandomOn = true;
+                        m1PowerOn = false;
+                        document.getElementById("m1RandomPower").innerText = translations[lang].random_stop;
                         togglePowerControls(1, true);
                         updateStatus("Motor 1 Random Power On");
                     } else if (data.motor === 2) {
                         m2RandomOn = true;
+                        m2PowerOn = false;
+                        document.getElementById("m2RandomPower").innerText = translations[lang].random_stop;
                         togglePowerControls(2, true);
                         updateStatus("Motor 2 Random Power On");
                     }
                 } else if (data.status === "random_stopped") {
                     if (data.motor === 1) {
                         m1RandomOn = false;
-                        togglePowerControls(1, false);
                         document.getElementById("m1RandomPower").innerText = translations[lang].random_power;
+                        togglePowerControls(1, false);
                         updateStatus("Motor 1 Random Power Stopped");
                     } else if (data.motor === 2) {
                         m2RandomOn = false;
-                        togglePowerControls(2, false);
                         document.getElementById("m2RandomPower").innerText = translations[lang].random_power;
+                        togglePowerControls(2, false);
                         updateStatus("Motor 2 Random Power Stopped");
                     }
                 }
@@ -333,33 +353,27 @@
             document.getElementById("m1Power").innerText = m1PowerOn ? translations[lang].silence : translations[lang].awaken;
             const speed = document.getElementById("m1SpeedSlider").value;
             client.publish(topicM1, `{"power": ${m1PowerOn ? 1 : 0}, "speed": ${speed}, "pattern": "${m1SelectedPattern}"}`, { qos: 0 }, (err) => {
-                if (!err) {
-                    console.log(`Sent to ${topicM1}: {"power": ${m1PowerOn ? 1 : 0}, "speed": ${speed}, "pattern": "${m1SelectedPattern}"}`);
-                    updateStatus(m1PowerOn ? "Motor 1 Awakens!" : "Motor 1 Silenced");
-                    togglePowerControls(1, m1PowerOn);
-                } else {
+                if (err) {
                     console.error("Publish error:", err);
-                    updateStatus("Error Awakening Motor 1");
+                    updateStatus("Error Toggling Motor 1 Power");
                 }
             });
         }
 
         function m1ToggleRandom() {
+            const wasRandomOn = m1RandomOn;
             m1RandomOn = !m1RandomOn;
             const lang = document.getElementById("language").value;
             document.getElementById("m1RandomPower").innerText = m1RandomOn ? translations[lang].random_stop : translations[lang].random_power;
             const speed = document.getElementById("m1SpeedSlider").value;
             const message = m1RandomOn ? `{"motor": 1, "random": 1}` : `{"motor": 1, "stop": 1}`;
             client.publish(topicRandom, message, { qos: 0 }, (err) => {
-                if (!err) {
-                    console.log(`Sent to ${topicRandom}: ${message}`);
-                    if (!m1RandomOn) updateStatus("Motor 1 Random Power Stopped");
-                } else {
+                if (err) {
                     console.error("Publish error:", err);
                     updateStatus("Failed to Toggle Random Power for Motor 1");
                 }
             });
-            sendCommand(topicM1, speed, m1SelectedPattern); // Ensure settings are applied
+            if (m1RandomOn) sendCommand(topicM1, speed, m1SelectedPattern); // Apply settings when turning on
         }
 
         function m2Speed(value) {
@@ -385,33 +399,27 @@
             document.getElementById("m2Power").innerText = m2PowerOn ? translations[lang].silence : translations[lang].awaken;
             const speed = document.getElementById("m2SpeedSlider").value;
             client.publish(topicM2, `{"power": ${m2PowerOn ? 1 : 0}, "speed": ${speed}, "pattern": "${m2SelectedPattern}"}`, { qos: 0 }, (err) => {
-                if (!err) {
-                    console.log(`Sent to ${topicM2}: {"power": ${m2PowerOn ? 1 : 0}, "speed": ${speed}, "pattern": "${m2SelectedPattern}"}`);
-                    updateStatus(m2PowerOn ? "Motor 2 Awakens!" : "Motor 2 Silenced");
-                    togglePowerControls(2, m2PowerOn);
-                } else {
+                if (err) {
                     console.error("Publish error:", err);
-                    updateStatus("Error Awakening Motor 2");
+                    updateStatus("Error Toggling Motor 2 Power");
                 }
             });
         }
 
         function m2ToggleRandom() {
+            const wasRandomOn = m2RandomOn;
             m2RandomOn = !m2RandomOn;
             const lang = document.getElementById("language").value;
             document.getElementById("m2RandomPower").innerText = m2RandomOn ? translations[lang].random_stop : translations[lang].random_power;
             const speed = document.getElementById("m2SpeedSlider").value;
             const message = m2RandomOn ? `{"motor": 2, "random": 1}` : `{"motor": 2, "stop": 1}`;
             client.publish(topicRandom, message, { qos: 0 }, (err) => {
-                if (!err) {
-                    console.log(`Sent to ${topicRandom}: ${message}`);
-                    if (!m2RandomOn) updateStatus("Motor 2 Random Power Stopped");
-                } else {
+                if (err) {
                     console.error("Publish error:", err);
                     updateStatus("Failed to Toggle Random Power for Motor 2");
                 }
             });
-            sendCommand(topicM2, speed, m2SelectedPattern); // Ensure settings are applied
+            if (m2RandomOn) sendCommand(topicM2, speed, m2SelectedPattern); // Apply settings when turning on
         }
 
         function sendCommand(topic, speed, pattern) {
