@@ -313,16 +313,18 @@
                 } else if (data.status === "random_stopped") {
                     if (data.motor === 1) {
                         m1RandomOn = false;
-                        m1PowerOn = false;
                         document.getElementById("m1RandomPower").innerText = translations[lang].random_power;
-                        togglePowerControls(1, false, false);
-                        updateStatus("Motor 1 Random Power Stopped");
+                        document.getElementById("m1SpeedSlider").value = data.speed;  // Preserve speed
+                        document.getElementById("m1SpeedValue").innerText = data.speed;
+                        togglePowerControls(1, m1PowerOn, false);
+                        updateStatus(`Motor 1 Random Power Stopped, Speed preserved at ${data.speed}%`);
                     } else if (data.motor === 2) {
                         m2RandomOn = false;
-                        m2PowerOn = false;
                         document.getElementById("m2RandomPower").innerText = translations[lang].random_power;
-                        togglePowerControls(2, false, false);
-                        updateStatus("Motor 2 Random Power Stopped");
+                        document.getElementById("m2SpeedSlider").value = data.speed;
+                        document.getElementById("m2SpeedValue").innerText = data.speed;
+                        togglePowerControls(2, m2PowerOn, false);
+                        updateStatus(`Motor 2 Random Power Stopped, Speed preserved at ${data.speed}%`);
                     }
                 }
             }
