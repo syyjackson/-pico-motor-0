@@ -26,7 +26,7 @@
             box-shadow: 0 0 15px #ff4d4d;
             position: relative;
         }
-        .random-power, .wifi-config, .motor {
+        .wifi-config, .motor {
             margin: 20px 0;
             padding: 15px;
             background: #2b0000;
@@ -58,7 +58,7 @@
             background: #ff9999;
             box-shadow: inset 0 0 10px #ff4d4d;
         }
-        input[type="range"], input[type="number"] {
+        input[type="range"] {
             width: 150px;
             accent-color: #ff4d4d;
             margin: 5px;
@@ -105,8 +105,8 @@
             border-radius: 5px;
             font-family: Arial, sans-serif;
         }
-        .normal-controls {
-            display: block;
+        .normal-controls, .random-controls {
+            display: inline-block;
         }
         .hidden {
             display: none;
@@ -124,12 +124,6 @@
         </div>
         <h1 data-lang="title">Vengeance Motor Control</h1>
         <div class="skull">💀</div>
-        <div class="random-power">
-            <h2 data-lang="random_title">Random Power On</h2>
-            <label><span data-lang="period">Period (hours):</span> <input type="number" id="period" min="1" value="1" step="1"></label>
-            <button id="randomPowerBtn" onclick="randomPowerOn()" data-lang="random_power">Random Power On</button>
-            <button id="stopRandomBtn" onclick="stopRandom()" data-lang="stop_random" style="display: none;">Stop Random</button>
-        </div>
         <div class="wifi-config">
             <h2 data-lang="wifi_title">Wi-Fi of Retribution</h2>
             <label><span data-lang="ssid_label">SSID:</span> <input type="text" id="wifiSSID" placeholder="Enter Wi-Fi SSID"></label>
@@ -139,8 +133,11 @@
         <div class="motor">
             <h2 data-lang="motor1_title">Motor 1 - Blade of Wrath</h2>
             <div class="normal-controls" id="m1NormalControls">
-                <button id="m1Power" onclick="m1TogglePower()" data-lang="awaken">Awaken</button><br>
+                <button id="m1Power" onclick="m1TogglePower()" data-lang="awaken">Awaken</button>
             </div>
+            <div class="random-controls" id="m1RandomControls">
+                <button id="m1RandomPower" onclick="m1ToggleRandom()" data-lang="random_power">Random Power On</button>
+            </div><br>
             <label><span data-lang="fury_label">Fury (0-100%):</span> <span id="m1SpeedValue">0</span></label>
             <input type="range" id="m1SpeedSlider" min="0" max="100" value="0" oninput="m1Speed(this.value)"><br>
             <button id="m1Heartbeat" onclick="m1Pattern('heartbeat')" data-lang="heartbeat">Heart of Vengeance</button>
@@ -154,8 +151,11 @@
         <div class="motor">
             <h2 data-lang="motor2_title">Motor 2 - Hammer of Justice</h2>
             <div class="normal-controls" id="m2NormalControls">
-                <button id="m2Power" onclick="m2TogglePower()" data-lang="awaken">Awaken</button><br>
+                <button id="m2Power" onclick="m2TogglePower()" data-lang="awaken">Awaken</button>
             </div>
+            <div class="random-controls" id="m2RandomControls">
+                <button id="m2RandomPower" onclick="m2ToggleRandom()" data-lang="random_power">Random Power On</button>
+            </div><br>
             <label><span data-lang="fury_label">Fury (0-100%):</span> <span id="m2SpeedValue">0</span></label>
             <input type="range" id="m2SpeedSlider" min="0" max="100" value="0" oninput="m2Speed(this.value)"><br>
             <button id="m2Heartbeat" onclick="m2Pattern('heartbeat')" data-lang="heartbeat">Heart of Vengeance</button>
@@ -174,10 +174,6 @@
         const translations = {
             "en": {
                 "title": "Vengeance Motor Control",
-                "random_title": "Random Power On",
-                "period": "Period (hours):",
-                "random_power": "Random Power On",
-                "stop_random": "Stop Random",
                 "wifi_title": "Wi-Fi of Retribution",
                 "ssid_label": "SSID:",
                 "password_label": "Password:",
@@ -186,6 +182,8 @@
                 "motor2_title": "Motor 2 - Hammer of Justice",
                 "awaken": "Awaken",
                 "silence": "Silence",
+                "random_power": "Random Power On",
+                "random_stop": "Stop Random",
                 "fury_label": "Fury (0-100%):",
                 "heartbeat": "Heart of Vengeance",
                 "wave": "Wave of Doom",
@@ -195,15 +193,10 @@
                 "stutter": "Stutter of Pain",
                 "steady": "Steady Revenge",
                 "status_prefix": "Status: ",
-                "alert": "Enter both SSID and Password, Mortal!",
-                "alert_random": "Set Period, Mortal!"
+                "alert": "Enter both SSID and Password, Mortal!"
             },
             "zh-CN": {
                 "title": "复仇电机控制",
-                "random_title": "随机电源开启",
-                "period": "周期 (小时):",
-                "random_power": "随机电源开启",
-                "stop_random": "停止随机",
                 "wifi_title": "复仇Wi-Fi",
                 "ssid_label": "SSID:",
                 "password_label": "密码:",
@@ -212,6 +205,8 @@
                 "motor2_title": "电机2 - 正义之锤",
                 "awaken": "唤醒",
                 "silence": "沉默",
+                "random_power": "随机电源开启",
+                "random_stop": "停止随机",
                 "fury_label": "怒火 (0-100%):",
                 "heartbeat": "复仇之心",
                 "wave": "毁灭之波",
@@ -221,15 +216,10 @@
                 "stutter": "痛苦颤动",
                 "steady": "稳定复仇",
                 "status_prefix": "状态: ",
-                "alert": "输入SSID和密码，凡人！",
-                "alert_random": "设置周期，凡人！"
+                "alert": "输入SSID和密码，凡人！"
             },
             "zh-TW": {
                 "title": "復仇電機控制",
-                "random_title": "隨機電源開啟",
-                "period": "週期 (小時):",
-                "random_power": "隨機電源開啟",
-                "stop_random": "停止隨機",
                 "wifi_title": "復仇Wi-Fi",
                 "ssid_label": "SSID:",
                 "password_label": "密碼:",
@@ -238,6 +228,8 @@
                 "motor2_title": "電機2 - 正義之錘",
                 "awaken": "喚醒",
                 "silence": "沉默",
+                "random_power": "隨機電源開啟",
+                "random_stop": "停止隨機",
                 "fury_label": "怒火 (0-100%):",
                 "heartbeat": "復仇之心",
                 "wave": "毀滅之波",
@@ -247,8 +239,7 @@
                 "stutter": "痛苦顫動",
                 "steady": "穩定復仇",
                 "status_prefix": "狀態: ",
-                "alert": "輸入SSID和密碼，凡人！",
-                "alert_random": "設置週期，凡人！"
+                "alert": "輸入SSID和密碼，凡人！"
             }
         };
 
@@ -257,13 +248,14 @@
         const topicM1 = "pico/motor1/control";
         const topicM2 = "pico/motor2/control";
         const topicWifi = "pico/wifi/config";
-        const topicTimer = "pico/system/timer";
+        const topicRandom = "pico/system/random";
         const topicFeedback = "pico/system/feedback";
         let m1PowerOn = false;
+        let m1RandomOn = false;
         let m2PowerOn = false;
+        let m2RandomOn = false;
         let m1SelectedPattern = "none";
         let m2SelectedPattern = "none";
-        let randomActive = false;
 
         const client = mqtt.connect(`wss://${broker}:${port}`, { 
             clientId: "web_client_" + Math.random().toString(16).substr(2, 8),
@@ -281,14 +273,29 @@
         client.on("message", (topic, message) => {
             if (topic === topicFeedback) {
                 const data = JSON.parse(message.toString());
+                const lang = document.getElementById("language").value;
                 if (data.status === "random_set") {
-                    updateStatus("Random Power On Set: Period " + data.period + "h");
-                    randomActive = true;
-                    togglePowerControls(true);
+                    if (data.motor === 1) {
+                        m1RandomOn = true;
+                        togglePowerControls(1, true);
+                        updateStatus("Motor 1 Random Power On");
+                    } else if (data.motor === 2) {
+                        m2RandomOn = true;
+                        togglePowerControls(2, true);
+                        updateStatus("Motor 2 Random Power On");
+                    }
                 } else if (data.status === "random_stopped") {
-                    updateStatus("Random Power Stopped");
-                    randomActive = false;
-                    togglePowerControls(false);
+                    if (data.motor === 1) {
+                        m1RandomOn = false;
+                        togglePowerControls(1, false);
+                        document.getElementById("m1RandomPower").innerText = translations[lang].random_power;
+                        updateStatus("Motor 1 Random Power Stopped");
+                    } else if (data.motor === 2) {
+                        m2RandomOn = false;
+                        togglePowerControls(2, false);
+                        document.getElementById("m2RandomPower").innerText = translations[lang].random_power;
+                        updateStatus("Motor 2 Random Power Stopped");
+                    }
                 }
             }
         });
@@ -305,7 +312,7 @@
 
         function m1Speed(value) {
             document.getElementById("m1SpeedValue").innerText = value;
-            if (m1PowerOn && !randomActive) {
+            if (m1PowerOn && !m1RandomOn) {
                 sendCommand(topicM1, value, m1SelectedPattern);
                 updateStatus("Motor 1 Fury Set to " + value + "%");
             }
@@ -313,7 +320,7 @@
 
         function m1Pattern(pattern) {
             m1SelectedPattern = pattern;
-            if (m1PowerOn && !randomActive) {
+            if (m1PowerOn && !m1RandomOn) {
                 sendCommand(topicM1, document.getElementById("m1SpeedSlider").value, pattern);
                 updateStatus("Motor 1 Unleashes " + pattern);
             }
@@ -329,7 +336,7 @@
                 if (!err) {
                     console.log(`Sent to ${topicM1}: {"power": ${m1PowerOn ? 1 : 0}, "speed": ${speed}, "pattern": "${m1SelectedPattern}"}`);
                     updateStatus(m1PowerOn ? "Motor 1 Awakens!" : "Motor 1 Silenced");
-                    togglePowerControls(m1PowerOn || m2PowerOn);
+                    togglePowerControls(1, m1PowerOn);
                 } else {
                     console.error("Publish error:", err);
                     updateStatus("Error Awakening Motor 1");
@@ -337,9 +344,27 @@
             });
         }
 
+        function m1ToggleRandom() {
+            m1RandomOn = !m1RandomOn;
+            const lang = document.getElementById("language").value;
+            document.getElementById("m1RandomPower").innerText = m1RandomOn ? translations[lang].random_stop : translations[lang].random_power;
+            const speed = document.getElementById("m1SpeedSlider").value;
+            const message = m1RandomOn ? `{"motor": 1, "random": 1}` : `{"motor": 1, "stop": 1}`;
+            client.publish(topicRandom, message, { qos: 0 }, (err) => {
+                if (!err) {
+                    console.log(`Sent to ${topicRandom}: ${message}`);
+                    if (!m1RandomOn) updateStatus("Motor 1 Random Power Stopped");
+                } else {
+                    console.error("Publish error:", err);
+                    updateStatus("Failed to Toggle Random Power for Motor 1");
+                }
+            });
+            sendCommand(topicM1, speed, m1SelectedPattern); // Ensure settings are applied
+        }
+
         function m2Speed(value) {
             document.getElementById("m2SpeedValue").innerText = value;
-            if (m2PowerOn && !randomActive) {
+            if (m2PowerOn && !m2RandomOn) {
                 sendCommand(topicM2, value, m2SelectedPattern);
                 updateStatus("Motor 2 Fury Set to " + value + "%");
             }
@@ -347,7 +372,7 @@
 
         function m2Pattern(pattern) {
             m2SelectedPattern = pattern;
-            if (m2PowerOn && !randomActive) {
+            if (m2PowerOn && !m2RandomOn) {
                 sendCommand(topicM2, document.getElementById("m2SpeedSlider").value, pattern);
                 updateStatus("Motor 2 Unleashes " + pattern);
             }
@@ -363,12 +388,30 @@
                 if (!err) {
                     console.log(`Sent to ${topicM2}: {"power": ${m2PowerOn ? 1 : 0}, "speed": ${speed}, "pattern": "${m2SelectedPattern}"}`);
                     updateStatus(m2PowerOn ? "Motor 2 Awakens!" : "Motor 2 Silenced");
-                    togglePowerControls(m1PowerOn || m2PowerOn);
+                    togglePowerControls(2, m2PowerOn);
                 } else {
                     console.error("Publish error:", err);
                     updateStatus("Error Awakening Motor 2");
                 }
             });
+        }
+
+        function m2ToggleRandom() {
+            m2RandomOn = !m2RandomOn;
+            const lang = document.getElementById("language").value;
+            document.getElementById("m2RandomPower").innerText = m2RandomOn ? translations[lang].random_stop : translations[lang].random_power;
+            const speed = document.getElementById("m2SpeedSlider").value;
+            const message = m2RandomOn ? `{"motor": 2, "random": 1}` : `{"motor": 2, "stop": 1}`;
+            client.publish(topicRandom, message, { qos: 0 }, (err) => {
+                if (!err) {
+                    console.log(`Sent to ${topicRandom}: ${message}`);
+                    if (!m2RandomOn) updateStatus("Motor 2 Random Power Stopped");
+                } else {
+                    console.error("Publish error:", err);
+                    updateStatus("Failed to Toggle Random Power for Motor 2");
+                }
+            });
+            sendCommand(topicM2, speed, m2SelectedPattern); // Ensure settings are applied
         }
 
         function sendCommand(topic, speed, pattern) {
@@ -400,58 +443,15 @@
             }
         }
 
-        function randomPowerOn() {
-            const period = document.getElementById("period").value;
-            const lang = document.getElementById("language").value;
-            if (period) {
-                const m1SpeedValue = document.getElementById("m1SpeedSlider").value;
-                const m2SpeedValue = document.getElementById("m2SpeedSlider").value;
-                sendCommand(topicM1, m1SpeedValue, m1SelectedPattern);
-                sendCommand(topicM2, m2SpeedValue, m2SelectedPattern);
-                
-                const message = `{"period": ${period}}`;
-                client.publish(topicTimer, message, { qos: 0 }, (err) => {
-                    if (!err) {
-                        console.log(`Sent to ${topicTimer}:`, message);
-                        updateStatus("Random Power On Unleashed");
-                    } else {
-                        console.error("Publish error:", err);
-                        updateStatus("Failed to Set Random Power");
-                    }
-                });
-            } else {
-                alert(translations[lang].alert_random);
-                updateStatus("Random Power Config Incomplete");
-            }
-        }
-
-        function stopRandom() {
-            client.publish(topicTimer, '{"stop": 1}', { qos: 0 }, (err) => {
-                if (!err) {
-                    console.log(`Sent to ${topicTimer}: {"stop": 1}`);
-                } else {
-                    console.error("Publish error:", err);
-                    updateStatus("Failed to Stop Random Power");
-                }
-            });
-        }
-
-        function togglePowerControls(isActive) {
-            const normalControlsM1 = document.getElementById("m1NormalControls");
-            const normalControlsM2 = document.getElementById("m2NormalControls");
-            const randomControls = document.querySelector(".random-power");
+        function togglePowerControls(motor, isActive) {
+            const normalControls = document.getElementById(`m${motor}NormalControls`);
+            const randomControls = document.getElementById(`m${motor}RandomControls`);
             if (isActive) {
-                normalControlsM1.classList.add("hidden");
-                normalControlsM2.classList.add("hidden");
+                normalControls.classList.add("hidden");
                 randomControls.classList.remove("hidden");
-                document.getElementById("randomPowerBtn").style.display = "none";
-                document.getElementById("stopRandomBtn").style.display = "inline";
             } else {
-                normalControlsM1.classList.remove("hidden");
-                normalControlsM2.classList.remove("hidden");
+                normalControls.classList.remove("hidden");
                 randomControls.classList.remove("hidden");
-                document.getElementById("randomPowerBtn").style.display = "inline";
-                document.getElementById("stopRandomBtn").style.display = "none";
             }
         }
 
@@ -473,8 +473,18 @@
             const lang = document.getElementById("language").value;
             document.querySelectorAll("[data-lang]").forEach(element => {
                 const key = element.getAttribute("data-lang");
-                if (element.tagName === "BUTTON" && (element.id === "m1Power" || element.id === "m2Power")) {
-                    element.innerText = (element.id === "m1Power" && m1PowerOn) || (element.id === "m2Power" && m2PowerOn) ? translations[lang].silence : translations[lang][key];
+                if (element.tagName === "BUTTON") {
+                    if (element.id === "m1Power") {
+                        element.innerText = m1PowerOn ? translations[lang].silence : translations[lang].awaken;
+                    } else if (element.id === "m2Power") {
+                        element.innerText = m2PowerOn ? translations[lang].silence : translations[lang].awaken;
+                    } else if (element.id === "m1RandomPower") {
+                        element.innerText = m1RandomOn ? translations[lang].random_stop : translations[lang].random_power;
+                    } else if (element.id === "m2RandomPower") {
+                        element.innerText = m2RandomOn ? translations[lang].random_stop : translations[lang].random_power;
+                    } else {
+                        element.innerText = translations[lang][key];
+                    }
                 } else if (element.tagName === "SPAN") {
                     element.innerText = translations[lang][key];
                 } else {
@@ -488,7 +498,8 @@
             changeLanguage();
             updatePatternButtons(1, "none");
             updatePatternButtons(2, "none");
-            togglePowerControls(false);
+            togglePowerControls(1, false);
+            togglePowerControls(2, false);
         });
     </script>
 </body>
