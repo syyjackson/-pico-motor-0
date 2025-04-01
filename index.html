@@ -26,7 +26,7 @@
             box-shadow: 0 0 15px #ff4d4d;
             position: relative;
         }
-        .system-timer, .wifi-config, .motor {
+        .random-power, .wifi-config, .motor {
             margin: 20px 0;
             padding: 15px;
             background: #2b0000;
@@ -58,7 +58,7 @@
             background: #ff9999;
             box-shadow: inset 0 0 10px #ff4d4d;
         }
-        input[type="range"], input[type="number"], input[type="time"] {
+        input[type="range"], input[type="number"] {
             width: 150px;
             accent-color: #ff4d4d;
             margin: 5px;
@@ -105,6 +105,12 @@
             border-radius: 5px;
             font-family: Arial, sans-serif;
         }
+        .normal-controls {
+            display: block;
+        }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -118,13 +124,11 @@
         </div>
         <h1 data-lang="title">Vengeance Motor Control</h1>
         <div class="skull">💀</div>
-        <div class="system-timer">
-            <h2 data-lang="timer_title">Random Attack Timer</h2>
-            <label><span data-lang="current_time">Current Time:</span> <span id="currentTime">--:--</span></label>
-            <label><span data-lang="start_time">Start Time:</span> <input type="time" id="startTime"></label>
+        <div class="random-power">
+            <h2 data-lang="random_title">Random Power On</h2>
             <label><span data-lang="period">Period (hours):</span> <input type="number" id="period" min="1" value="1" step="1"></label>
-            <button id="randomAttackBtn" onclick="randomAttack()" data-lang="random_attack">Random Attack</button>
-            <button id="stopTimerBtn" onclick="stopTimer()" data-lang="stop_timer" style="display: none;">Stop Timer</button>
+            <button id="randomPowerBtn" onclick="randomPowerOn()" data-lang="random_power">Random Power On</button>
+            <button id="stopRandomBtn" onclick="stopRandom()" data-lang="stop_random" style="display: none;">Stop Random</button>
         </div>
         <div class="wifi-config">
             <h2 data-lang="wifi_title">Wi-Fi of Retribution</h2>
@@ -134,9 +138,9 @@
         </div>
         <div class="motor">
             <h2 data-lang="motor1_title">Motor 1 - Blade of Wrath</h2>
-            <button onclick="m1Direction(1)" data-lang="strike">Strike</button>
-            <button id="m1Power" onclick="m1TogglePower()" data-lang="awaken">Awaken</button>
-            <button onclick="m1Direction(-1)" data-lang="retreat">Retreat</button><br>
+            <div class="normal-controls" id="m1NormalControls">
+                <button id="m1Power" onclick="m1TogglePower()" data-lang="awaken">Awaken</button><br>
+            </div>
             <label><span data-lang="fury_label">Fury (0-100%):</span> <span id="m1SpeedValue">0</span></label>
             <input type="range" id="m1SpeedSlider" min="0" max="100" value="0" oninput="m1Speed(this.value)"><br>
             <button id="m1Heartbeat" onclick="m1Pattern('heartbeat')" data-lang="heartbeat">Heart of Vengeance</button>
@@ -148,362 +152,4 @@
             <button id="m1None" onclick="m1Pattern('none')" data-lang="steady">Steady Revenge</button>
         </div>
         <div class="motor">
-            <h2 data-lang="motor2_title">Motor 2 - Hammer of Justice</h2>
-            <button onclick="m2Direction(1)" data-lang="strike">Strike</button>
-            <button id="m2Power" onclick="m2TogglePower()" data-lang="awaken">Awaken</button>
-            <button onclick="m2Direction(-1)" data-lang="retreat">Retreat</button><br>
-            <label><span data-lang="fury_label">Fury (0-100%):</span> <span id="m2SpeedValue">0</span></label>
-            <input type="range" id="m2SpeedSlider" min="0" max="100" value="0" oninput="m2Speed(this.value)"><br>
-            <button id="m2Heartbeat" onclick="m2Pattern('heartbeat')" data-lang="heartbeat">Heart of Vengeance</button>
-            <button id="m2Wave" onclick="m2Pattern('wave')" data-lang="wave">Wave of Doom</button>
-            <button id="m2Quick" onclick="m2Pattern('quick')" data-lang="quick">Swift Retribution</button>
-            <button id="m2Pulse" onclick="m2Pattern('pulse')" data-lang="pulse">Pulse of Rage</button>
-            <button id="m2Buzz" onclick="m2Pattern('buzz')" data-lang="buzz">Buzz of Fury</button>
-            <button id="m2Stutter" onclick="m2Pattern('stutter')" data-lang="stutter">Stutter of Pain</button>
-            <button id="m2None" onclick="m2Pattern('none')" data-lang="steady">Steady Revenge</button>
-        </div>
-        <div class="status" id="status" data-lang="status_prefix">Status: Awaiting Your Command...</div>
-    </div>
-
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    <script>
-        const translations = {
-            "en": {
-                "title": "Vengeance Motor Control",
-                "timer_title": "Random Attack Timer",
-                "current_time": "Current Time:",
-                "start_time": "Start Time:",
-                "period": "Period (hours):",
-                "random_attack": "Random Attack",
-                "stop_timer": "Stop Timer",
-                "wifi_title": "Wi-Fi of Retribution",
-                "ssid_label": "SSID:",
-                "password_label": "Password:",
-                "wifi_button": "Unleash Connection",
-                "motor1_title": "Motor 1 - Blade of Wrath",
-                "motor2_title": "Motor 2 - Hammer of Justice",
-                "strike": "Strike",
-                "retreat": "Retreat",
-                "awaken": "Awaken",
-                "silence": "Silence",
-                "fury_label": "Fury (0-100%):",
-                "heartbeat": "Heart of Vengeance",
-                "wave": "Wave of Doom",
-                "quick": "Swift Retribution",
-                "pulse": "Pulse of Rage",
-                "buzz": "Buzz of Fury",
-                "stutter": "Stutter of Pain",
-                "steady": "Steady Revenge",
-                "status_prefix": "Status: ",
-                "alert": "Enter both SSID and Password, Mortal!",
-                "alert_timer": "Set Start Time and Period, Mortal!"
-            },
-            "zh-CN": {
-                "title": "复仇电机控制",
-                "timer_title": "随机攻击计时器",
-                "current_time": "当前时间:",
-                "start_time": "开始时间:",
-                "period": "周期 (小时):",
-                "random_attack": "随机攻击",
-                "stop_timer": "停止计时器",
-                "wifi_title": "复仇Wi-Fi",
-                "ssid_label": "SSID:",
-                "password_label": "密码:",
-                "wifi_button": "释放连接",
-                "motor1_title": "电机1 - 愤怒之刃",
-                "motor2_title": "电机2 - 正义之锤",
-                "strike": "打击",
-                "retreat": "后退",
-                "awaken": "唤醒",
-                "silence": "沉默",
-                "fury_label": "怒火 (0-100%):",
-                "heartbeat": "复仇之心",
-                "wave": "毁灭之波",
-                "quick": "迅速报复",
-                "pulse": "愤怒脉冲",
-                "buzz": "狂怒嗡鸣",
-                "stutter": "痛苦颤动",
-                "steady": "稳定复仇",
-                "status_prefix": "状态: ",
-                "alert": "输入SSID和密码，凡人！",
-                "alert_timer": "设置开始时间和周期，凡人！"
-            },
-            "zh-TW": {
-                "title": "復仇電機控制",
-                "timer_title": "隨機攻擊計時器",
-                "current_time": "當前時間:",
-                "start_time": "開始時間:",
-                "period": "週期 (小時):",
-                "random_attack": "隨機攻擊",
-                "stop_timer": "停止計時器",
-                "wifi_title": "復仇Wi-Fi",
-                "ssid_label": "SSID:",
-                "password_label": "密碼:",
-                "wifi_button": "釋放連接",
-                "motor1_title": "電機1 - 憤怒之刃",
-                "motor2_title": "電機2 - 正義之錘",
-                "strike": "打擊",
-                "retreat": "後退",
-                "awaken": "喚醒",
-                "silence": "沉默",
-                "fury_label": "怒火 (0-100%):",
-                "heartbeat": "復仇之心",
-                "wave": "毀滅之波",
-                "quick": "迅速報復",
-                "pulse": "憤怒脈衝",
-                "buzz": "狂怒嗡鳴",
-                "stutter": "痛苦顫動",
-                "steady": "穩定復仇",
-                "status_prefix": "狀態: ",
-                "alert": "輸入SSID和密碼，凡人！",
-                "alert_timer": "設置開始時間和週期，凡人！"
-            }
-        };
-
-        const broker = "test.mosquitto.org";
-        const port = 8081;
-        const topicM1 = "pico/motor1/control";
-        const topicM2 = "pico/motor2/control";
-        const topicWifi = "pico/wifi/config";
-        const topicTimer = "pico/system/timer";
-        const topicFeedback = "pico/system/feedback";
-        let m1PowerOn = false;
-        let m2PowerOn = false;
-        let m1SelectedPattern = "none";
-        let m2SelectedPattern = "none";
-        let timerActive = false;
-
-        const client = mqtt.connect(`wss://${broker}:${port}`, { 
-            clientId: "web_client_" + Math.random().toString(16).substr(2, 8),
-            keepalive: 60
-        });
-
-        client.on("connect", () => {
-            console.log("Connected to MQTT broker");
-            client.subscribe(topicFeedback);
-            sendCommand(topicM1, 0, 0, "none");
-            sendCommand(topicM2, 0, 0, "none");
-            updateStatus("Connected to the Shadows");
-        });
-
-        client.on("message", (topic, message) => {
-            if (topic === topicFeedback) {
-                const data = JSON.parse(message.toString());
-                if (data.status === "timer_set") {
-                    updateStatus("Random Attack Set: Period " + data.period + "h");
-                    timerActive = true;
-                    document.getElementById("randomAttackBtn").style.display = "none";
-                    document.getElementById("stopTimerBtn").style.display = "inline";
-                } else if (data.status === "timer_stopped") {
-                    updateStatus("Timer Stopped");
-                    timerActive = false;
-                    document.getElementById("randomAttackBtn").style.display = "inline";
-                    document.getElementById("stopTimerBtn").style.display = "none";
-                }
-            }
-        });
-
-        client.on("error", (err) => {
-            console.error("MQTT error:", err);
-            updateStatus("Error in the Abyss: " + err);
-        });
-
-        client.on("close", () => {
-            console.log("Connection closed");
-            updateStatus("Connection Lost to the Void");
-        });
-
-        function m1Direction(dir) {
-            if (m1PowerOn) {
-                sendCommand(topicM1, dir, document.getElementById("m1SpeedSlider").value, m1SelectedPattern);
-                updateStatus("Motor 1 Strikes!");
-            }
-        }
-
-        function m1Speed(value) {
-            document.getElementById("m1SpeedValue").innerText = value;
-            if (m1PowerOn) {
-                sendCommand(topicM1, value > 0 ? 1 : 0, value, m1SelectedPattern);
-                updateStatus("Motor 1 Fury Set to " + value + "%");
-            }
-        }
-
-        function m1Pattern(pattern) {
-            m1SelectedPattern = pattern;
-            if (m1PowerOn) {
-                sendCommand(topicM1, document.getElementById("m1SpeedSlider").value > 0 ? 1 : 0, 
-                            document.getElementById("m1SpeedSlider").value, pattern);
-                updateStatus("Motor 1 Unleashes " + pattern);
-            }
-            updatePatternButtons(1, pattern);
-        }
-
-        function m1TogglePower() {
-            m1PowerOn = !m1PowerOn;
-            const lang = document.getElementById("language").value;
-            document.getElementById("m1Power").innerText = m1PowerOn ? translations[lang].silence : translations[lang].awaken;
-            const speed = document.getElementById("m1SpeedSlider").value;
-            client.publish(topicM1, `{"power": ${m1PowerOn ? 1 : 0}, "speed": ${speed}, "direction": ${speed > 0 ? 1 : 0}, "pattern": "${m1SelectedPattern}"}`, { qos: 0 }, (err) => {
-                if (!err) {
-                    console.log(`Sent to ${topicM1}: {"power": ${m1PowerOn ? 1 : 0}, "speed": ${speed}, "direction": ${speed > 0 ? 1 : 0}, "pattern": "${m1SelectedPattern}"}`);
-                    updateStatus(m1PowerOn ? "Motor 1 Awakens!" : "Motor 1 Silenced");
-                } else {
-                    console.error("Publish error:", err);
-                    updateStatus("Error Awakening Motor 1");
-                }
-            });
-        }
-
-        function m2Direction(dir) {
-            if (m2PowerOn) {
-                sendCommand(topicM2, dir, document.getElementById("m2SpeedSlider").value, m2SelectedPattern);
-                updateStatus("Motor 2 Strikes!");
-            }
-        }
-
-        function m2Speed(value) {
-            document.getElementById("m2SpeedValue").innerText = value;
-            if (m2PowerOn) {
-                sendCommand(topicM2, value > 0 ? 1 : 0, value, m2SelectedPattern);
-                updateStatus("Motor 2 Fury Set to " + value + "%");
-            }
-        }
-
-        function m2Pattern(pattern) {
-            m2SelectedPattern = pattern;
-            if (m2PowerOn) {
-                sendCommand(topicM2, document.getElementById("m2SpeedSlider").value > 0 ? 1 : 0, 
-                            document.getElementById("m2SpeedSlider").value, pattern);
-                updateStatus("Motor 2 Unleashes " + pattern);
-            }
-            updatePatternButtons(2, pattern);
-        }
-
-        function m2TogglePower() {
-            m2PowerOn = !m2PowerOn;
-            const lang = document.getElementById("language").value;
-            document.getElementById("m2Power").innerText = m2PowerOn ? translations[lang].silence : translations[lang].awaken;
-            const speed = document.getElementById("m2SpeedSlider").value;
-            client.publish(topicM2, `{"power": ${m2PowerOn ? 1 : 0}, "speed": ${speed}, "direction": ${speed > 0 ? 1 : 0}, "pattern": "${m2SelectedPattern}"}`, { qos: 0 }, (err) => {
-                if (!err) {
-                    console.log(`Sent to ${topicM2}: {"power": ${m2PowerOn ? 1 : 0}, "speed": ${speed}, "direction": ${speed > 0 ? 1 : 0}, "pattern": "${m2SelectedPattern}"}`);
-                    updateStatus(m2PowerOn ? "Motor 2 Awakens!" : "Motor 2 Silenced");
-                } else {
-                    console.error("Publish error:", err);
-                    updateStatus("Error Awakening Motor 2");
-                }
-            });
-        }
-
-        function sendCommand(topic, direction, speed, pattern) {
-            const message = `{"direction": ${direction}, "speed": ${speed}, "pattern": "${pattern}"}`;
-            client.publish(topic, message, { qos: 0 }, (err) => {
-                if (!err) console.log(`Sent to ${topic}:`, message);
-                else console.error("Publish error:", err);
-            });
-        }
-
-        function saveWifiConfig() {
-            const ssid = document.getElementById("wifiSSID").value;
-            const password = document.getElementById("wifiPassword").value;
-            const lang = document.getElementById("language").value;
-            if (ssid && password) {
-                const message = `{"ssid": "${ssid}", "password": "${password}"}`;
-                client.publish(topicWifi, message, { qos: 0 }, (err) => {
-                    if (!err) {
-                        console.log(`Sent to ${topicWifi}:`, message);
-                        updateStatus("Wi-Fi Unleashed: " + ssid);
-                    } else {
-                        console.error("Publish error:", err);
-                        updateStatus("Failed to Unleash Wi-Fi");
-                    }
-                });
-            } else {
-                alert(translations[lang].alert);
-                updateStatus("Wi-Fi Config Incomplete");
-            }
-        }
-
-        function randomAttack() {
-            const startTime = document.getElementById("startTime").value;
-            const period = document.getElementById("period").value;
-            const lang = document.getElementById("language").value;
-            if (startTime && period) {
-                const m1SpeedValue = document.getElementById("m1SpeedSlider").value;
-                const m2SpeedValue = document.getElementById("m2SpeedSlider").value;
-                // Set speeds and patterns without toggling power off
-                sendCommand(topicM1, m1SpeedValue > 0 ? 1 : 0, m1SpeedValue, m1SelectedPattern);
-                sendCommand(topicM2, m2SpeedValue > 0 ? 1 : 0, m2SpeedValue, m2SelectedPattern);
-                
-                const message = `{"start_time": "${startTime}", "period": ${period}}`;
-                client.publish(topicTimer, message, { qos: 0 }, (err) => {
-                    if (!err) {
-                        console.log(`Sent to ${topicTimer}:`, message);
-                        updateStatus("Random Attack Unleashed");
-                    } else {
-                        console.error("Publish error:", err);
-                        updateStatus("Failed to Set Random Attack");
-                    }
-                });
-            } else {
-                alert(translations[lang].alert_timer);
-                updateStatus("Random Attack Config Incomplete");
-            }
-        }
-
-        function stopTimer() {
-            client.publish(topicTimer, '{"stop": 1}', { qos: 0 }, (err) => {
-                if (!err) {
-                    console.log(`Sent to ${topicTimer}: {"stop": 1}`);
-                } else {
-                    console.error("Publish error:", err);
-                    updateStatus("Failed to Stop Timer");
-                }
-            });
-        }
-
-        function updatePatternButtons(motor, pattern) {
-            const prefix = motor === 1 ? "m1" : "m2";
-            const patterns = ["heartbeat", "wave", "quick", "pulse", "buzz", "stutter", "none"];
-            patterns.forEach(p => {
-                const btn = document.getElementById(`${prefix}${p.charAt(0).toUpperCase() + p.slice(1)}`);
-                btn.classList.toggle("pressed", p === pattern);
-            });
-        }
-
-        function updateStatus(message) {
-            const lang = document.getElementById("language").value;
-            document.getElementById("status").innerText = translations[lang].status_prefix + message;
-        }
-
-        function changeLanguage() {
-            const lang = document.getElementById("language").value;
-            document.querySelectorAll("[data-lang]").forEach(element => {
-                const key = element.getAttribute("data-lang");
-                if (element.tagName === "BUTTON" && (element.id === "m1Power" || element.id === "m2Power")) {
-                    element.innerText = (element.id === "m1Power" && m1PowerOn) || (element.id === "m2Power" && m2PowerOn) ? translations[lang].silence : translations[lang][key];
-                } else if (element.tagName === "SPAN") {
-                    element.innerText = translations[lang][key];
-                } else {
-                    element.innerText = translations[lang][key];
-                }
-            });
-            updateStatus("Language Changed to " + (lang === "en" ? "English" : lang === "zh-CN" ? "Simplified Chinese" : "Traditional Chinese"));
-        }
-
-        function updateClock() {
-            const now = new Date();
-            const time = now.toTimeString().split(" ")[0].slice(0, 5); // HH:MM
-            document.getElementById("currentTime").innerText = time;
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            changeLanguage();
-            updateClock();
-            setInterval(updateClock, 1000);
-            updatePatternButtons(1, "none");
-            updatePatternButtons(2, "none");
-        });
-    </script>
-</body>
-</html>
+            <h
