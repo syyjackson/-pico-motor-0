@@ -279,37 +279,47 @@
                         m1PowerOn = data.state === 1;
                         m1RandomOn = false;
                         document.getElementById("m1Power").innerText = m1PowerOn ? translations[lang].silence : translations[lang].awaken;
+                        document.getElementById("m1SpeedSlider").value = data.speed;
+                        document.getElementById("m1SpeedValue").innerText = data.speed;
                         togglePowerControls(1, m1PowerOn, false);
-                        updateStatus(m1PowerOn ? "Motor 1 Awakens!" : "Motor 1 Silenced");
+                        updateStatus(m1PowerOn ? `Motor 1 Awakens at ${data.speed}%!` : "Motor 1 Silenced");
                     } else if (data.motor === 2) {
                         m2PowerOn = data.state === 1;
                         m2RandomOn = false;
                         document.getElementById("m2Power").innerText = m2PowerOn ? translations[lang].silence : translations[lang].awaken;
+                        document.getElementById("m2SpeedSlider").value = data.speed;
+                        document.getElementById("m2SpeedValue").innerText = data.speed;
                         togglePowerControls(2, m2PowerOn, false);
-                        updateStatus(m2PowerOn ? "Motor 2 Awakens!" : "Motor 2 Silenced");
+                        updateStatus(m2PowerOn ? `Motor 2 Awakens at ${data.speed}%!` : "Motor 2 Silenced");
                     }
                 } else if (data.status === "random_set") {
                     if (data.motor === 1) {
                         m1RandomOn = true;
                         m1PowerOn = false;
                         document.getElementById("m1RandomPower").innerText = translations[lang].random_stop;
+                        document.getElementById("m1SpeedSlider").value = data.speed;
+                        document.getElementById("m1SpeedValue").innerText = data.speed;
                         togglePowerControls(1, false, true);
-                        updateStatus("Motor 1 Random Power On");
+                        updateStatus(`Motor 1 Random Power On at ${data.speed}%`);
                     } else if (data.motor === 2) {
                         m2RandomOn = true;
                         m2PowerOn = false;
                         document.getElementById("m2RandomPower").innerText = translations[lang].random_stop;
+                        document.getElementById("m2SpeedSlider").value = data.speed;
+                        document.getElementById("m2SpeedValue").innerText = data.speed;
                         togglePowerControls(2, false, true);
-                        updateStatus("Motor 2 Random Power On");
+                        updateStatus(`Motor 2 Random Power On at ${data.speed}%`);
                     }
                 } else if (data.status === "random_stopped") {
                     if (data.motor === 1) {
                         m1RandomOn = false;
+                        m1PowerOn = false;
                         document.getElementById("m1RandomPower").innerText = translations[lang].random_power;
                         togglePowerControls(1, false, false);
                         updateStatus("Motor 1 Random Power Stopped");
                     } else if (data.motor === 2) {
                         m2RandomOn = false;
+                        m2PowerOn = false;
                         document.getElementById("m2RandomPower").innerText = translations[lang].random_power;
                         togglePowerControls(2, false, false);
                         updateStatus("Motor 2 Random Power Stopped");
@@ -330,18 +340,15 @@
 
         function m1Speed(value) {
             document.getElementById("m1SpeedValue").innerText = value;
-            if (m1PowerOn && !m1RandomOn) {
-                sendCommand(topicM1, value, m1SelectedPattern);
-                updateStatus("Motor 1 Fury Set to " + value + "%");
-            }
+            sendCommand(topicM1, value, m1SelectedPattern);
+            updateStatus(`Motor 1 Fury Set to ${value}%`);
         }
 
         function m1Pattern(pattern) {
             m1SelectedPattern = pattern;
-            if (m1PowerOn && !m1RandomOn) {
-                sendCommand(topicM1, document.getElementById("m1SpeedSlider").value, pattern);
-                updateStatus("Motor 1 Unleashes " + pattern);
-            }
+            const speed = document.getElementById("m1SpeedSlider").value;
+            sendCommand(topicM1, speed, pattern);
+            updateStatus(`Motor 1 Unleashes ${pattern} at ${speed}%`);
             updatePatternButtons(1, pattern);
         }
 
@@ -370,23 +377,20 @@
                     updateStatus("Failed to Toggle Random Power for Motor 1");
                 }
             });
-            if (m1RandomOn) sendCommand(topicM1, speed, m1SelectedPattern); // Apply settings when turning on
+            if (m1RandomOn) sendCommand(topicM1, speed, m1SelectedPattern);
         }
 
         function m2Speed(value) {
             document.getElementById("m2SpeedValue").innerText = value;
-            if (m2PowerOn && !m2RandomOn) {
-                sendCommand(topicM2, value, m2SelectedPattern);
-                updateStatus("Motor 2 Fury Set to " + value + "%");
-            }
+            sendCommand(topicM2, value, m2SelectedPattern);
+            updateStatus(`Motor 2 Fury Set to ${value}%`);
         }
 
         function m2Pattern(pattern) {
             m2SelectedPattern = pattern;
-            if (m2PowerOn && !m2RandomOn) {
-                sendCommand(topicM2, document.getElementById("m2SpeedSlider").value, pattern);
-                updateStatus("Motor 2 Unleashes " + pattern);
-            }
+            const speed = document.getElementById("m2SpeedSlider").value;
+            sendCommand(topicM2, speed, pattern);
+            updateStatus(`Motor 2 Unleashes ${pattern} at ${speed}%`);
             updatePatternButtons(2, pattern);
         }
 
@@ -415,7 +419,7 @@
                     updateStatus("Failed to Toggle Random Power for Motor 2");
                 }
             });
-            if (m2RandomOn) sendCommand(topicM2, speed, m2SelectedPattern); // Apply settings when turning on
+            if (m2RandomOn) sendCommand(topicM2, speed, m2SelectedPattern);
         }
 
         function sendCommand(topic, speed, pattern) {
