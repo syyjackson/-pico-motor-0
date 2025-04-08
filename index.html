@@ -58,7 +58,11 @@
             background: #ff9999;
             box-shadow: inset 0 0 10px #ff4d4d;
         }
-        input[type="range"], input[type="number"], input[type="time"] {
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        input[type="range"], input[type="number"] {
             width: 150px;
             accent-color: #ff4d4d;
             margin: 5px;
@@ -119,11 +123,10 @@
         <h1 data-lang="title">Vengeance Motor Control</h1>
         <div class="skull">💀</div>
         <div class="system-timer">
-            <h2 data-lang="timer_title">Random Attack Timer</h2>
-            <label><span data-lang="current_time">Current Time:</span> <span id="currentTime">--:--</span></label>
-            <label><span data-lang="start_time">Start Time:</span> <input type="time" id="startTime"></label>
-            <label><span data-lang="period">Period (hours):</span> <input type="number" id="period" min="1" value="1" step="1"></label>
-            <button id="randomAttackBtn" onclick="randomAttack()" data-lang="random_attack">Random Attack</button>
+            <h2 data-lang="timer_title">Timer Control</h2>
+            <label><span data-lang="duration">Duration (minutes):</span> <input type="number" id="timerDuration" min="30" value="30" step="1"></label>
+            <button id="startTimerBtn" onclick="startTimer(false)" data-lang="start_timer">Start Timer</button>
+            <button id="startRandomBtn" onclick="startTimer(true)" data-lang="start_random">Start Random</button>
             <button id="stopTimerBtn" onclick="stopTimer()" data-lang="stop_timer" style="display: none;">Stop Timer</button>
         </div>
         <div class="wifi-config">
@@ -170,11 +173,10 @@
         const translations = {
             "en": {
                 "title": "Vengeance Motor Control",
-                "timer_title": "Random Attack Timer",
-                "current_time": "Current Time:",
-                "start_time": "Start Time:",
-                "period": "Period (hours):",
-                "random_attack": "Random Attack",
+                "timer_title": "Timer Control",
+                "duration": "Duration (minutes):",
+                "start_timer": "Start Timer",
+                "start_random": "Start Random",
                 "stop_timer": "Stop Timer",
                 "wifi_title": "Wi-Fi of Retribution",
                 "ssid_label": "SSID:",
@@ -196,15 +198,14 @@
                 "steady": "Steady Revenge",
                 "status_prefix": "Status: ",
                 "alert": "Enter both SSID and Password, Mortal!",
-                "alert_timer": "Set Start Time and Period, Mortal!"
+                "alert_timer": "Set duration (min 30 minutes), Mortal!"
             },
             "zh-CN": {
                 "title": "复仇电机控制",
-                "timer_title": "随机攻击计时器",
-                "current_time": "当前时间:",
-                "start_time": "开始时间:",
-                "period": "周期 (小时):",
-                "random_attack": "随机攻击",
+                "timer_title": "计时器控制",
+                "duration": "持续时间 (分钟):",
+                "start_timer": "启动计时器",
+                "start_random": "启动随机",
                 "stop_timer": "停止计时器",
                 "wifi_title": "复仇Wi-Fi",
                 "ssid_label": "SSID:",
@@ -226,15 +227,14 @@
                 "steady": "稳定复仇",
                 "status_prefix": "状态: ",
                 "alert": "输入SSID和密码，凡人！",
-                "alert_timer": "设置开始时间和周期，凡人！"
+                "alert_timer": "设置持续时间（最少30分钟），凡人！"
             },
             "zh-TW": {
                 "title": "復仇電機控制",
-                "timer_title": "隨機攻擊計時器",
-                "current_time": "當前時間:",
-                "start_time": "開始時間:",
-                "period": "週期 (小時):",
-                "random_attack": "隨機攻擊",
+                "timer_title": "計時器控制",
+                "duration": "持續時間 (分鐘):",
+                "start_timer": "啟動計時器",
+                "start_random": "啟動隨機",
                 "stop_timer": "停止計時器",
                 "wifi_title": "復仇Wi-Fi",
                 "ssid_label": "SSID:",
@@ -256,7 +256,7 @@
                 "steady": "穩定復仇",
                 "status_prefix": "狀態: ",
                 "alert": "輸入SSID和密碼，凡人！",
-                "alert_timer": "設置開始時間和週期，凡人！"
+                "alert_timer": "設置持續時間（最少30分鐘），凡人！"
             }
         };
 
@@ -290,15 +290,13 @@
             if (topic === topicFeedback) {
                 const data = JSON.parse(message.toString());
                 if (data.status === "timer_set") {
-                    updateStatus("Random Attack Set: Period " + data.period + "h");
+                    updateStatus("Timer Set: Duration " + (data.duration / 60) + " minutes");
                     timerActive = true;
-                    document.getElementById("randomAttackBtn").style.display = "none";
-                    document.getElementById("stopTimerBtn").style.display = "inline";
+                    toggleControls(true);
                 } else if (data.status === "timer_stopped") {
                     updateStatus("Timer Stopped");
                     timerActive = false;
-                    document.getElementById("randomAttackBtn").style.display = "inline";
-                    document.getElementById("stopTimerBtn").style.display = "none";
+                    toggleControls(false);
                 }
             }
         });
@@ -314,7 +312,7 @@
         });
 
         function m1Direction(dir) {
-            if (m1PowerOn) {
+            if (m1PowerOn && !timerActive) {
                 sendCommand(topicM1, dir, document.getElementById("m1SpeedSlider").value, m1SelectedPattern);
                 updateStatus("Motor 1 Strikes!");
             }
@@ -322,7 +320,7 @@
 
         function m1Speed(value) {
             document.getElementById("m1SpeedValue").innerText = value;
-            if (m1PowerOn) {
+            if (m1PowerOn && !timerActive) {
                 sendCommand(topicM1, value > 0 ? 1 : 0, value, m1SelectedPattern);
                 updateStatus("Motor 1 Fury Set to " + value + "%");
             }
@@ -330,7 +328,7 @@
 
         function m1Pattern(pattern) {
             m1SelectedPattern = pattern;
-            if (m1PowerOn) {
+            if (m1PowerOn && !timerActive) {
                 sendCommand(topicM1, document.getElementById("m1SpeedSlider").value > 0 ? 1 : 0, 
                             document.getElementById("m1SpeedSlider").value, pattern);
                 updateStatus("Motor 1 Unleashes " + pattern);
@@ -339,23 +337,25 @@
         }
 
         function m1TogglePower() {
-            m1PowerOn = !m1PowerOn;
-            const lang = document.getElementById("language").value;
-            document.getElementById("m1Power").innerText = m1PowerOn ? translations[lang].silence : translations[lang].awaken;
-            const speed = document.getElementById("m1SpeedSlider").value;
-            client.publish(topicM1, `{"power": ${m1PowerOn ? 1 : 0}, "speed": ${speed}, "direction": ${speed > 0 ? 1 : 0}, "pattern": "${m1SelectedPattern}"}`, { qos: 0 }, (err) => {
-                if (!err) {
-                    console.log(`Sent to ${topicM1}: {"power": ${m1PowerOn ? 1 : 0}, "speed": ${speed}, "direction": ${speed > 0 ? 1 : 0}, "pattern": "${m1SelectedPattern}"}`);
-                    updateStatus(m1PowerOn ? "Motor 1 Awakens!" : "Motor 1 Silenced");
-                } else {
-                    console.error("Publish error:", err);
-                    updateStatus("Error Awakening Motor 1");
-                }
-            });
+            if (!timerActive) {
+                m1PowerOn = !m1PowerOn;
+                const lang = document.getElementById("language").value;
+                document.getElementById("m1Power").innerText = m1PowerOn ? translations[lang].silence : translations[lang].awaken;
+                const speed = document.getElementById("m1SpeedSlider").value;
+                client.publish(topicM1, `{"power": ${m1PowerOn ? 1 : 0}, "speed": ${speed}, "direction": ${speed > 0 ? 1 : 0}, "pattern": "${m1SelectedPattern}"}`, { qos: 0 }, (err) => {
+                    if (!err) {
+                        console.log(`Sent to ${topicM1}: {"power": ${m1PowerOn ? 1 : 0}, "speed": ${speed}, "direction": ${speed > 0 ? 1 : 0}, "pattern": "${m1SelectedPattern}"}`);
+                        updateStatus(m1PowerOn ? "Motor 1 Awakens!" : "Motor 1 Silenced");
+                    } else {
+                        console.error("Publish error:", err);
+                        updateStatus("Error Awakening Motor 1");
+                    }
+                });
+            }
         }
 
         function m2Direction(dir) {
-            if (m2PowerOn) {
+            if (m2PowerOn && !timerActive) {
                 sendCommand(topicM2, dir, document.getElementById("m2SpeedSlider").value, m2SelectedPattern);
                 updateStatus("Motor 2 Strikes!");
             }
@@ -363,7 +363,7 @@
 
         function m2Speed(value) {
             document.getElementById("m2SpeedValue").innerText = value;
-            if (m2PowerOn) {
+            if (m2PowerOn && !timerActive) {
                 sendCommand(topicM2, value > 0 ? 1 : 0, value, m2SelectedPattern);
                 updateStatus("Motor 2 Fury Set to " + value + "%");
             }
@@ -371,7 +371,7 @@
 
         function m2Pattern(pattern) {
             m2SelectedPattern = pattern;
-            if (m2PowerOn) {
+            if (m2PowerOn && !timerActive) {
                 sendCommand(topicM2, document.getElementById("m2SpeedSlider").value > 0 ? 1 : 0, 
                             document.getElementById("m2SpeedSlider").value, pattern);
                 updateStatus("Motor 2 Unleashes " + pattern);
@@ -380,19 +380,21 @@
         }
 
         function m2TogglePower() {
-            m2PowerOn = !m2PowerOn;
-            const lang = document.getElementById("language").value;
-            document.getElementById("m2Power").innerText = m2PowerOn ? translations[lang].silence : translations[lang].awaken;
-            const speed = document.getElementById("m2SpeedSlider").value;
-            client.publish(topicM2, `{"power": ${m2PowerOn ? 1 : 0}, "speed": ${speed}, "direction": ${speed > 0 ? 1 : 0}, "pattern": "${m2SelectedPattern}"}`, { qos: 0 }, (err) => {
-                if (!err) {
-                    console.log(`Sent to ${topicM2}: {"power": ${m2PowerOn ? 1 : 0}, "speed": ${speed}, "direction": ${speed > 0 ? 1 : 0}, "pattern": "${m2SelectedPattern}"}`);
-                    updateStatus(m2PowerOn ? "Motor 2 Awakens!" : "Motor 2 Silenced");
-                } else {
-                    console.error("Publish error:", err);
-                    updateStatus("Error Awakening Motor 2");
-                }
-            });
+            if (!timerActive) {
+                m2PowerOn = !m2PowerOn;
+                const lang = document.getElementById("language").value;
+                document.getElementById("m2Power").innerText = m2PowerOn ? translations[lang].silence : translations[lang].awaken;
+                const speed = document.getElementById("m2SpeedSlider").value;
+                client.publish(topicM2, `{"power": ${m2PowerOn ? 1 : 0}, "speed": ${speed}, "direction": ${speed > 0 ? 1 : 0}, "pattern": "${m2SelectedPattern}"}`, { qos: 0 }, (err) => {
+                    if (!err) {
+                        console.log(`Sent to ${topicM2}: {"power": ${m2PowerOn ? 1 : 0}, "speed": ${speed}, "direction": ${speed > 0 ? 1 : 0}, "pattern": "${m2SelectedPattern}"}`);
+                        updateStatus(m2PowerOn ? "Motor 2 Awakens!" : "Motor 2 Silenced");
+                    } else {
+                        console.error("Publish error:", err);
+                        updateStatus("Error Awakening Motor 2");
+                    }
+                });
+            }
         }
 
         function sendCommand(topic, direction, speed, pattern) {
@@ -424,30 +426,27 @@
             }
         }
 
-        function randomAttack() {
-            const startTime = document.getElementById("startTime").value;
-            const period = document.getElementById("period").value;
+        function startTimer(random) {
+            const duration = document.getElementById("timerDuration").value;
             const lang = document.getElementById("language").value;
-            if (startTime && period) {
-                const m1SpeedValue = document.getElementById("m1SpeedSlider").value;
-                const m2SpeedValue = document.getElementById("m2SpeedSlider").value;
-                // Set speeds and patterns without toggling power off
-                sendCommand(topicM1, m1SpeedValue > 0 ? 1 : 0, m1SpeedValue, m1SelectedPattern);
-                sendCommand(topicM2, m2SpeedValue > 0 ? 1 : 0, m2SpeedValue, m2SelectedPattern);
-                
-                const message = `{"start_time": "${startTime}", "period": ${period}}`;
+            if (duration && parseInt(duration) >= 30) {
+                const seconds = parseInt(duration) * 60;
+                const message = `{"duration": ${seconds}, "random": ${random ? 1 : 0}}`;
                 client.publish(topicTimer, message, { qos: 0 }, (err) => {
                     if (!err) {
                         console.log(`Sent to ${topicTimer}:`, message);
-                        updateStatus("Random Attack Unleashed");
+                        updateStatus(random ? "Random Timer Unleashed" : "Timer Unleashed");
+                        document.getElementById("startTimerBtn").style.display = "none";
+                        document.getElementById("startRandomBtn").style.display = "none";
+                        document.getElementById("stopTimerBtn").style.display = "inline";
                     } else {
                         console.error("Publish error:", err);
-                        updateStatus("Failed to Set Random Attack");
+                        updateStatus("Failed to Set Timer");
                     }
                 });
             } else {
                 alert(translations[lang].alert_timer);
-                updateStatus("Random Attack Config Incomplete");
+                updateStatus("Timer Config Incomplete");
             }
         }
 
@@ -455,11 +454,19 @@
             client.publish(topicTimer, '{"stop": 1}', { qos: 0 }, (err) => {
                 if (!err) {
                     console.log(`Sent to ${topicTimer}: {"stop": 1}`);
+                    document.getElementById("startTimerBtn").style.display = "inline";
+                    document.getElementById("startRandomBtn").style.display = "inline";
+                    document.getElementById("stopTimerBtn").style.display = "none";
                 } else {
                     console.error("Publish error:", err);
                     updateStatus("Failed to Stop Timer");
                 }
             });
+        }
+
+        function toggleControls(disable) {
+            const motorControls = document.querySelectorAll('.motor button, .motor input');
+            motorControls.forEach(control => control.disabled = disable);
         }
 
         function updatePatternButtons(motor, pattern) {
@@ -491,16 +498,8 @@
             updateStatus("Language Changed to " + (lang === "en" ? "English" : lang === "zh-CN" ? "Simplified Chinese" : "Traditional Chinese"));
         }
 
-        function updateClock() {
-            const now = new Date();
-            const time = now.toTimeString().split(" ")[0].slice(0, 5); // HH:MM
-            document.getElementById("currentTime").innerText = time;
-        }
-
         document.addEventListener("DOMContentLoaded", () => {
             changeLanguage();
-            updateClock();
-            setInterval(updateClock, 1000);
             updatePatternButtons(1, "none");
             updatePatternButtons(2, "none");
         });
