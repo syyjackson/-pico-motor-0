@@ -81,6 +81,15 @@
             color: #ff4d4d;
             font-family: Arial, sans-serif;
         }
+        select {
+            padding: 8px;
+            margin: 5px;
+            border: 2px solid #ff4d4d;
+            border-radius: 5px;
+            background: #1a1a1a;
+            color: #ff4d4d;
+            font-family: Arial, sans-serif;
+        }
         label {
             font-size: 1.3em;
             margin: 10px 0;
@@ -101,7 +110,7 @@
             top: 20px;
             right: 20px;
         }
-        select {
+        select.lang {
             padding: 5px;
             background: #ff4d4d;
             color: #000;
@@ -114,7 +123,7 @@
 <body>
     <div class="container">
         <div class="lang-select">
-            <select id="language" onchange="changeLanguage()">
+            <select id="language" class="lang" onchange="changeLanguage()">
                 <option value="en">English</option>
                 <option value="zh-CN">简体中文</option>
                 <option value="zh-TW">繁體中文</option>
@@ -129,8 +138,12 @@
                 <input type="number" id="durationMinutes" min="0" max="59" value="0" step="1" placeholder="Min"> Min
             </label>
             <label><span data-lang="start_time">Start Time:</span> 
-                <input type="number" id="startHours" min="0" max="23" placeholder="Hrs"> Hrs 
-                <input type="number" id="startMinutes" min="0" max="59" placeholder="Min"> Min
+                <select id="startTime">
+                    <option value="now" data-lang="now">Now</option>
+                    <option value="custom">Custom</option>
+                </select>
+                <input type="number" id="startHours" min="0" max="23" placeholder="HH" style="display: none;"> : 
+                <input type="number" id="startMinutes" min="0" max="59" placeholder="MM" style="display: none;">
             </label>
             <button id="startTimerBtn" onclick="startTimer(false)" data-lang="start_timer">Start Timer</button>
             <button id="startRandomBtn" onclick="startTimer(true)" data-lang="start_random">Start Random</button>
@@ -183,6 +196,7 @@
                 "timer_title": "Timer Control",
                 "duration": "Duration:",
                 "start_time": "Start Time:",
+                "now": "Now",
                 "start_timer": "Start Timer",
                 "start_random": "Start Random",
                 "stop_timer": "Stop Timer",
@@ -206,13 +220,14 @@
                 "steady": "Steady Revenge",
                 "status_prefix": "Status: ",
                 "alert": "Enter both SSID and Password, Mortal!",
-                "alert_timer": "Set a valid duration (hours or minutes > 0), Mortal!"
+                "alert_timer": "Set a valid duration (hours or minutes > 0) and start time (HH:MM), Mortal!"
             },
             "zh-CN": {
                 "title": "复仇电机控制",
                 "timer_title": "计时器控制",
                 "duration": "持续时间:",
                 "start_time": "开始时间:",
+                "now": "现在",
                 "start_timer": "启动计时器",
                 "start_random": "启动随机",
                 "stop_timer": "停止计时器",
@@ -236,13 +251,14 @@
                 "steady": "稳定复仇",
                 "status_prefix": "状态: ",
                 "alert": "输入SSID和密码，凡人！",
-                "alert_timer": "设置有效的持续时间（小时或分钟 > 0），凡人！"
+                "alert_timer": "设置有效的持续时间（小时或分钟 > 0）和开始时间（HH:MM），凡人！"
             },
             "zh-TW": {
                 "title": "復仇電機控制",
                 "timer_title": "計時器控制",
                 "duration": "持續時間:",
                 "start_time": "開始時間:",
+                "now": "現在",
                 "start_timer": "啟動計時器",
                 "start_random": "啟動隨機",
                 "stop_timer": "停止計時器",
@@ -266,7 +282,7 @@
                 "steady": "穩定復仇",
                 "status_prefix": "狀態: ",
                 "alert": "輸入SSID和密碼，凡人！",
-                "alert_timer": "設置有效的持續時間（小時或分鐘 > 0），凡人！"
+                "alert_timer": "設置有效的持續時間（小時或分鐘 > 0）和開始時間（HH:MM），凡人！"
             }
         };
 
@@ -300,7 +316,7 @@
             if (topic === topicFeedback) {
                 const data = JSON.parse(message.toString());
                 if (data.status === "timer_set") {
-                    const startTime = new Date(data.start_time * 1000).toLocaleTimeString();
+                    const startTime = new Date(data.start_time * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     updateStatus(`Timer Set: Start ${startTime}, Duration ${Math.floor(data.duration / 3600)}h ${Math.floor((data.duration % 3600) / 60)}m`);
                     timerActive = true;
                     toggleControls(true);
@@ -440,12 +456,24 @@
         function startTimer(random) {
             const durationHours = parseInt(document.getElementById("durationHours").value || 0);
             const durationMinutes = parseInt(document.getElementById("durationMinutes").value || 0);
-            const startHours = document.getElementById("startHours").value === "" ? -1 : parseInt(document.getElementById("startHours").value);
-            const startMinutes = document.getElementById("startMinutes").value === "" ? -1 : parseInt(document.getElementById("startMinutes").value);
+            const startTimeSelect = document.getElementById("startTime").value;
+            let startTime = "now";
             const lang = document.getElementById("language").value;
 
+            if (startTimeSelect === "custom") {
+                const startHours = parseInt(document.getElementById("startHours").value || -1);
+                const startMinutes = parseInt(document.getElementById("startMinutes").value || -1);
+                if (startHours >= 0 && startHours <= 23 && startMinutes >= 0 && startMinutes <= 59) {
+                    startTime = `${startHours.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')}`;
+                } else {
+                    alert(translations[lang].alert_timer);
+                    updateStatus("Invalid Start Time");
+                    return;
+                }
+            }
+
             if (durationHours > 0 || durationMinutes > 0) {
-                const message = `{"duration_hours": ${durationHours}, "duration_minutes": ${durationMinutes}, "start_hours": ${startHours}, "start_minutes": ${startMinutes}, "random": ${random ? 1 : 0}}`;
+                const message = `{"duration_hours": ${durationHours}, "duration_minutes": ${durationMinutes}, "start_time": "${startTime}", "random": ${random ? 1 : 0}}`;
                 client.publish(topicTimer, message, { qos: 0 }, (err) => {
                     if (!err) {
                         console.log(`Sent to ${topicTimer}:`, message);
@@ -503,7 +531,7 @@
                 const key = element.getAttribute("data-lang");
                 if (element.tagName === "BUTTON" && (element.id === "m1Power" || element.id === "m2Power")) {
                     element.innerText = (element.id === "m1Power" && m1PowerOn) || (element.id === "m2Power" && m2PowerOn) ? translations[lang].silence : translations[lang][key];
-                } else if (element.tagName === "SPAN") {
+                } else if (element.tagName === "SPAN" || element.tagName === "OPTION") {
                     element.innerText = translations[lang][key];
                 } else {
                     element.innerText = translations[lang][key];
@@ -516,6 +544,10 @@
             changeLanguage();
             updatePatternButtons(1, "none");
             updatePatternButtons(2, "none");
+            document.getElementById("startTime").addEventListener("change", function() {
+                const customInputs = [document.getElementById("startHours"), document.getElementById("startMinutes")];
+                customInputs.forEach(input => input.style.display = this.value === "custom" ? "inline" : "none");
+            });
         });
     </script>
 </body>
