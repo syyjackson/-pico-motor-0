@@ -11,77 +11,97 @@
             text-align: center;
             padding: 20px;
             margin: 0;
+            overflow-x: hidden;
         }
         h1 {
-            font-size: 3em;
-            text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
+            font-size: 3.5em;
+            text-shadow: 0 0 15px #ff0000, 0 0 30px #ff0000;
             margin-bottom: 20px;
         }
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 0 15px #ff4d4d;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px #ff4d4d, inset 0 0 10px #ff0000;
             position: relative;
         }
         .system-timer, .wifi-config, .motor {
-            margin: 20px 0;
-            padding: 15px;
+            margin: 25px 0;
+            padding: 20px;
             background: #2b0000;
-            border: 2px solid #ff4d4d;
-            border-radius: 10px;
+            border: 3px solid #ff4d4d;
+            border-radius: 15px;
+            box-shadow: 0 0 10px #ff0000;
         }
         h2 {
-            font-size: 2em;
+            font-size: 2.2em;
             margin: 10px 0;
-            text-shadow: 0 0 5px #ff0000;
+            text-shadow: 0 0 8px #ff0000;
         }
         button {
             background: #ff4d4d;
             color: #000;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 25px;
             margin: 5px;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             font-family: 'Creepster', cursive;
-            font-size: 1.2em;
-            transition: all 0.3s;
+            font-size: 1.3em;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 5px #ff0000;
         }
         button:hover {
             background: #ff9999;
-            box-shadow: 0 0 10px #ff4d4d;
+            box-shadow: 0 0 15px #ff4d4d;
+            transform: scale(1.05);
         }
         button.pressed {
             background: #ff9999;
-            box-shadow: inset 0 0 10px #ff4d4d;
+            box-shadow: inset 0 0 15px #ff4d4d;
+            transform: scale(0.95);
         }
         button:disabled {
             background: #666;
             cursor: not-allowed;
+            box-shadow: none;
         }
-        input[type="range"], input[type="number"] {
-            width: 60px;
-            accent-color: #ff4d4d;
-            margin: 5px;
-            background: #1a1a1a;
-            color: #ff4d4d;
-            border: 2px solid #ff4d4d;
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 200px;
+            height: 10px;
+            background: linear-gradient(to right, #1a1a1a, #ff4d4d);
             border-radius: 5px;
-            padding: 5px;
+            outline: none;
+            margin: 10px 0;
+            box-shadow: 0 0 5px #ff0000;
         }
-        input[type="text"] {
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #ff4d4d;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px #ff0000, inset 0 0 5px #000;
+            transition: all 0.2s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        input[type="number"] {
+            width: 60px;
             padding: 8px;
             margin: 5px;
-            border: 2px solid #ff4d4d;
-            border-radius: 5px;
             background: #1a1a1a;
             color: #ff4d4d;
+            border: 2px solid #ff4d4d;
+            border-radius: 5px;
             font-family: Arial, sans-serif;
         }
-        select {
+        input[type="text"], select {
             padding: 8px;
             margin: 5px;
             border: 2px solid #ff4d4d;
@@ -91,19 +111,24 @@
             font-family: Arial, sans-serif;
         }
         label {
-            font-size: 1.3em;
-            margin: 10px 0;
+            font-size: 1.4em;
+            margin: 15px 0;
             display: block;
+            text-shadow: 0 0 3px #ff0000;
         }
         .status {
-            margin-top: 20px;
-            font-size: 1.2em;
+            margin-top: 25px;
+            font-size: 1.3em;
             color: #ff9999;
-            text-shadow: 0 0 5px #ff4d4d;
+            text-shadow: 0 0 8px #ff4d4d;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 10px;
         }
         .skull {
-            font-size: 3em;
+            font-size: 4em;
             margin-bottom: 20px;
+            animation: pulse 2s infinite;
         }
         .lang-select {
             position: absolute;
@@ -117,6 +142,48 @@
             border: none;
             border-radius: 5px;
             font-family: Arial, sans-serif;
+        }
+        .pattern-visual {
+            width: 200px;
+            height: 20px;
+            background: #1a1a1a;
+            border: 2px solid #ff4d4d;
+            border-radius: 5px;
+            margin: 10px auto;
+            position: relative;
+            overflow: hidden;
+        }
+        .pattern-bar {
+            height: 100%;
+            background: #ff4d4d;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: width 0.3s ease;
+        }
+        .random-prediction {
+            font-size: 1.2em;
+            color: #ff9999;
+            margin-top: 10px;
+            text-shadow: 0 0 5px #ff0000;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        @keyframes wave {
+            0% { width: 0%; }
+            50% { width: 100%; }
+            100% { width: 0%; }
+        }
+        @keyframes heartbeat {
+            0% { width: 20%; }
+            10% { width: 40%; }
+            20% { width: 20%; }
+            30% { width: 40%; }
+            40% { width: 20%; }
+            100% { width: 20%; }
         }
     </style>
 </head>
@@ -148,6 +215,7 @@
             <button id="startTimerBtn" onclick="startTimer(false)" data-lang="start_timer">Start Timer</button>
             <button id="startRandomBtn" onclick="startTimer(true)" data-lang="start_random">Start Random</button>
             <button id="stopTimerBtn" onclick="stopTimer()" data-lang="stop_timer" style="display: none;">Stop Timer</button>
+            <div id="randomPrediction" class="random-prediction" style="display: none;"></div>
         </div>
         <div class="wifi-config">
             <h2 data-lang="wifi_title">Wi-Fi of Retribution</h2>
@@ -161,7 +229,8 @@
             <button id="m1Power" onclick="m1TogglePower()" data-lang="awaken">Awaken</button>
             <button onclick="m1Direction(-1)" data-lang="retreat">Retreat</button><br>
             <label><span data-lang="fury_label">Fury (0-100%):</span> <span id="m1SpeedValue">0</span></label>
-            <input type="range" id="m1SpeedSlider" min="0" max="100" value="0" oninput="m1Speed(this.value)"><br>
+            <input type="range" id="m1SpeedSlider" min="0" max="100" value="0" oninput="m1Speed(this.value)">
+            <div class="pattern-visual"><div id="m1PatternBar" class="pattern-bar" style="width: 0%;"></div></div>
             <button id="m1Heartbeat" onclick="m1Pattern('heartbeat')" data-lang="heartbeat">Heart of Vengeance</button>
             <button id="m1Wave" onclick="m1Pattern('wave')" data-lang="wave">Wave of Doom</button>
             <button id="m1Quick" onclick="m1Pattern('quick')" data-lang="quick">Swift Retribution</button>
@@ -176,7 +245,8 @@
             <button id="m2Power" onclick="m2TogglePower()" data-lang="awaken">Awaken</button>
             <button onclick="m2Direction(-1)" data-lang="retreat">Retreat</button><br>
             <label><span data-lang="fury_label">Fury (0-100%):</span> <span id="m2SpeedValue">0</span></label>
-            <input type="range" id="m2SpeedSlider" min="0" max="100" value="0" oninput="m2Speed(this.value)"><br>
+            <input type="range" id="m2SpeedSlider" min="0" max="100" value="0" oninput="m2Speed(this.value)">
+            <div class="pattern-visual"><div id="m2PatternBar" class="pattern-bar" style="width: 0%;"></div></div>
             <button id="m2Heartbeat" onclick="m2Pattern('heartbeat')" data-lang="heartbeat">Heart of Vengeance</button>
             <button id="m2Wave" onclick="m2Pattern('wave')" data-lang="wave">Wave of Doom</button>
             <button id="m2Quick" onclick="m2Pattern('quick')" data-lang="quick">Swift Retribution</button>
@@ -219,6 +289,7 @@
                 "stutter": "Stutter of Pain",
                 "steady": "Steady Revenge",
                 "status_prefix": "Status: ",
+                "random_next": "Next Random Strike in: ",
                 "alert": "Enter both SSID and Password, Mortal!",
                 "alert_timer": "Set a valid duration (hours or minutes > 0) and start time (HH:MM), Mortal!"
             },
@@ -250,6 +321,7 @@
                 "stutter": "痛苦颤动",
                 "steady": "稳定复仇",
                 "status_prefix": "状态: ",
+                "random_next": "下一次随机打击在: ",
                 "alert": "输入SSID和密码，凡人！",
                 "alert_timer": "设置有效的持续时间（小时或分钟 > 0）和开始时间（HH:MM），凡人！"
             },
@@ -281,6 +353,7 @@
                 "stutter": "痛苦顫動",
                 "steady": "穩定復仇",
                 "status_prefix": "狀態: ",
+                "random_next": "下一次隨機打擊在: ",
                 "alert": "輸入SSID和密碼，凡人！",
                 "alert_timer": "設置有效的持續時間（小時或分鐘 > 0）和開始時間（HH:MM），凡人！"
             }
@@ -298,6 +371,8 @@
         let m1SelectedPattern = "none";
         let m2SelectedPattern = "none";
         let timerActive = false;
+        let randomModeActive = false;
+        let randomNextEvent = 0;
 
         const client = mqtt.connect(`wss://${broker}:${port}`, { 
             clientId: "web_client_" + Math.random().toString(16).substr(2, 8),
@@ -320,10 +395,16 @@
                     updateStatus(`Timer Set: Start ${startTime}, Duration ${Math.floor(data.duration / 3600)}h ${Math.floor((data.duration % 3600) / 60)}m`);
                     timerActive = true;
                     toggleControls(true);
+                    if (randomModeActive) {
+                        randomNextEvent = data.start_time + Math.random() * 55 + 5; // Initial random offset (5-60s)
+                        updateRandomPrediction();
+                    }
                 } else if (data.status === "timer_stopped") {
                     updateStatus("Timer Stopped");
                     timerActive = false;
+                    randomModeActive = false;
                     toggleControls(false);
+                    document.getElementById("randomPrediction").style.display = "none";
                 }
             }
         });
@@ -361,6 +442,7 @@
                 updateStatus("Motor 1 Unleashes " + pattern);
             }
             updatePatternButtons(1, pattern);
+            visualizePattern("m1PatternBar", pattern);
         }
 
         function m1TogglePower() {
@@ -373,6 +455,7 @@
                     if (!err) {
                         console.log(`Sent to ${topicM1}: {"power": ${m1PowerOn ? 1 : 0}, "speed": ${speed}, "direction": ${speed > 0 ? 1 : 0}, "pattern": "${m1SelectedPattern}"}`);
                         updateStatus(m1PowerOn ? "Motor 1 Awakens!" : "Motor 1 Silenced");
+                        visualizePattern("m1PatternBar", m1PowerOn ? m1SelectedPattern : "none");
                     } else {
                         console.error("Publish error:", err);
                         updateStatus("Error Awakening Motor 1");
@@ -404,6 +487,7 @@
                 updateStatus("Motor 2 Unleashes " + pattern);
             }
             updatePatternButtons(2, pattern);
+            visualizePattern("m2PatternBar", pattern);
         }
 
         function m2TogglePower() {
@@ -416,6 +500,7 @@
                     if (!err) {
                         console.log(`Sent to ${topicM2}: {"power": ${m2PowerOn ? 1 : 0}, "speed": ${speed}, "direction": ${speed > 0 ? 1 : 0}, "pattern": "${m2SelectedPattern}"}`);
                         updateStatus(m2PowerOn ? "Motor 2 Awakens!" : "Motor 2 Silenced");
+                        visualizePattern("m2PatternBar", m2PowerOn ? m2SelectedPattern : "none");
                     } else {
                         console.error("Publish error:", err);
                         updateStatus("Error Awakening Motor 2");
@@ -477,10 +562,14 @@
                 client.publish(topicTimer, message, { qos: 0 }, (err) => {
                     if (!err) {
                         console.log(`Sent to ${topicTimer}:`, message);
-                        updateStatus(random ? "Random Timer Unleashed" : "Timer Unleashed");
+                        updateStatus(random ? "Random Vengeance Unleashed" : "Timer Unleashed");
                         document.getElementById("startTimerBtn").style.display = "none";
                         document.getElementById("startRandomBtn").style.display = "none";
                         document.getElementById("stopTimerBtn").style.display = "inline";
+                        randomModeActive = random;
+                        if (random) {
+                            document.getElementById("randomPrediction").style.display = "block";
+                        }
                     } else {
                         console.error("Publish error:", err);
                         updateStatus("Failed to Set Timer");
@@ -520,6 +609,46 @@
             });
         }
 
+        function visualizePattern(barId, pattern) {
+            const bar = document.getElementById(barId);
+            bar.style.animation = "none"; // Reset animation
+            if (pattern === "none") {
+                bar.style.width = "100%";
+            } else if (pattern === "wave") {
+                bar.style.animation = "wave 2s infinite";
+            } else if (pattern === "heartbeat") {
+                bar.style.animation = "heartbeat 1.5s infinite";
+            } else if (pattern === "quick") {
+                bar.style.animation = "wave 0.5s infinite";
+            } else if (pattern === "pulse") {
+                bar.style.animation = "wave 1s infinite";
+            } else if (pattern === "buzz") {
+                bar.style.animation = "heartbeat 0.3s infinite";
+            } else if (pattern === "stutter") {
+                bar.style.animation = "heartbeat 0.8s infinite";
+            }
+        }
+
+        function updateRandomPrediction() {
+            if (randomModeActive) {
+                const now = Date.now() / 1000;
+                const timeLeft = randomNextEvent - now;
+                const lang = document.getElementById("language").value;
+                if (timeLeft > 0) {
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = Math.floor(timeLeft % 60);
+                    document.getElementById("randomPrediction").innerText = `${translations[lang].random_next}${minutes}m ${seconds}s`;
+                } else {
+                    // Simulate random event: 15s min, 180s max
+                    const duration = Math.random() * 165 + 15; // 15-180s
+                    const offTime = Math.random() * 55 + 5; // 5-60s
+                    randomNextEvent = now + duration + offTime;
+                    document.getElementById("randomPrediction").innerText = `${translations[lang].random_next}Striking Now! Next in ${Math.floor(offTime)}s`;
+                }
+                setTimeout(updateRandomPrediction, 1000);
+            }
+        }
+
         function updateStatus(message) {
             const lang = document.getElementById("language").value;
             document.getElementById("status").innerText = translations[lang].status_prefix + message;
@@ -544,6 +673,8 @@
             changeLanguage();
             updatePatternButtons(1, "none");
             updatePatternButtons(2, "none");
+            visualizePattern("m1PatternBar", "none");
+            visualizePattern("m2PatternBar", "none");
             document.getElementById("startTime").addEventListener("change", function() {
                 const customInputs = [document.getElementById("startHours"), document.getElementById("startMinutes")];
                 customInputs.forEach(input => input.style.display = this.value === "custom" ? "inline" : "none");
