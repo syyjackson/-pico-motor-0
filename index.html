@@ -63,7 +63,7 @@
             cursor: not-allowed;
         }
         input[type="range"], input[type="number"] {
-            width: 150px;
+            width: 60px;
             accent-color: #ff4d4d;
             margin: 5px;
             background: #1a1a1a;
@@ -124,7 +124,14 @@
         <div class="skull">💀</div>
         <div class="system-timer">
             <h2 data-lang="timer_title">Timer Control</h2>
-            <label><span data-lang="duration">Duration (minutes):</span> <input type="number" id="timerDuration" min="30" value="30" step="1"></label>
+            <label><span data-lang="duration">Duration:</span> 
+                <input type="number" id="durationHours" min="0" value="0" step="1" placeholder="Hrs"> Hrs 
+                <input type="number" id="durationMinutes" min="0" max="59" value="0" step="1" placeholder="Min"> Min
+            </label>
+            <label><span data-lang="start_time">Start Time:</span> 
+                <input type="number" id="startHours" min="0" max="23" placeholder="Hrs"> Hrs 
+                <input type="number" id="startMinutes" min="0" max="59" placeholder="Min"> Min
+            </label>
             <button id="startTimerBtn" onclick="startTimer(false)" data-lang="start_timer">Start Timer</button>
             <button id="startRandomBtn" onclick="startTimer(true)" data-lang="start_random">Start Random</button>
             <button id="stopTimerBtn" onclick="stopTimer()" data-lang="stop_timer" style="display: none;">Stop Timer</button>
@@ -174,7 +181,8 @@
             "en": {
                 "title": "Vengeance Motor Control",
                 "timer_title": "Timer Control",
-                "duration": "Duration (minutes):",
+                "duration": "Duration:",
+                "start_time": "Start Time:",
                 "start_timer": "Start Timer",
                 "start_random": "Start Random",
                 "stop_timer": "Stop Timer",
@@ -198,12 +206,13 @@
                 "steady": "Steady Revenge",
                 "status_prefix": "Status: ",
                 "alert": "Enter both SSID and Password, Mortal!",
-                "alert_timer": "Set duration (min 30 minutes), Mortal!"
+                "alert_timer": "Set a valid duration (hours or minutes > 0), Mortal!"
             },
             "zh-CN": {
                 "title": "复仇电机控制",
                 "timer_title": "计时器控制",
-                "duration": "持续时间 (分钟):",
+                "duration": "持续时间:",
+                "start_time": "开始时间:",
                 "start_timer": "启动计时器",
                 "start_random": "启动随机",
                 "stop_timer": "停止计时器",
@@ -227,12 +236,13 @@
                 "steady": "稳定复仇",
                 "status_prefix": "状态: ",
                 "alert": "输入SSID和密码，凡人！",
-                "alert_timer": "设置持续时间（最少30分钟），凡人！"
+                "alert_timer": "设置有效的持续时间（小时或分钟 > 0），凡人！"
             },
             "zh-TW": {
                 "title": "復仇電機控制",
                 "timer_title": "計時器控制",
-                "duration": "持續時間 (分鐘):",
+                "duration": "持續時間:",
+                "start_time": "開始時間:",
                 "start_timer": "啟動計時器",
                 "start_random": "啟動隨機",
                 "stop_timer": "停止計時器",
@@ -256,7 +266,7 @@
                 "steady": "穩定復仇",
                 "status_prefix": "狀態: ",
                 "alert": "輸入SSID和密碼，凡人！",
-                "alert_timer": "設置持續時間（最少30分鐘），凡人！"
+                "alert_timer": "設置有效的持續時間（小時或分鐘 > 0），凡人！"
             }
         };
 
@@ -290,7 +300,8 @@
             if (topic === topicFeedback) {
                 const data = JSON.parse(message.toString());
                 if (data.status === "timer_set") {
-                    updateStatus("Timer Set: Duration " + (data.duration / 60) + " minutes");
+                    const startTime = new Date(data.start_time * 1000).toLocaleTimeString();
+                    updateStatus(`Timer Set: Start ${startTime}, Duration ${Math.floor(data.duration / 3600)}h ${Math.floor((data.duration % 3600) / 60)}m`);
                     timerActive = true;
                     toggleControls(true);
                 } else if (data.status === "timer_stopped") {
@@ -427,11 +438,14 @@
         }
 
         function startTimer(random) {
-            const duration = document.getElementById("timerDuration").value;
+            const durationHours = parseInt(document.getElementById("durationHours").value || 0);
+            const durationMinutes = parseInt(document.getElementById("durationMinutes").value || 0);
+            const startHours = document.getElementById("startHours").value === "" ? -1 : parseInt(document.getElementById("startHours").value);
+            const startMinutes = document.getElementById("startMinutes").value === "" ? -1 : parseInt(document.getElementById("startMinutes").value);
             const lang = document.getElementById("language").value;
-            if (duration && parseInt(duration) >= 30) {
-                const seconds = parseInt(duration) * 60;
-                const message = `{"duration": ${seconds}, "random": ${random ? 1 : 0}}`;
+
+            if (durationHours > 0 || durationMinutes > 0) {
+                const message = `{"duration_hours": ${durationHours}, "duration_minutes": ${durationMinutes}, "start_hours": ${startHours}, "start_minutes": ${startMinutes}, "random": ${random ? 1 : 0}}`;
                 client.publish(topicTimer, message, { qos: 0 }, (err) => {
                     if (!err) {
                         console.log(`Sent to ${topicTimer}:`, message);
